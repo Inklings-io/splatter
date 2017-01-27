@@ -14,21 +14,20 @@ class Posts extends Migration
     public function up()
     {
         Schema::create('posts', function (Blueprint $table) {
-            //basic metadata
             $table->increments('id');
-            $table->timestamps();
-            $table->softDeletes();
+
+            //meta data useful for URL
+            $table->smallInteger('year');
+            $table->tinyInteger('month');
+            $table->tinyInteger('day');
+            $table->smallInteger('daycount');
+            $table->string('slug')->nullable();
+            $table->enum('type', ['article','note','photo','checkin','event','rsvp','like','bookmark','listen','watch','video','audio','tag','follow','unfollow','repost','snark','weight'])->default('note');
+
+            //additional metadata
             $table->boolean('context_parsed')->default(false);
             $table->boolean('draft')->default(false);
             $table->enum('content-format', ['html','plaintext', 'markdown'])->default('html');
-
-            //meta data useful for URL
-            $table->smallInt('year');
-            $table->tinyInteger('month');
-            $table->tinyInteger('day');
-            $table->smallInt('daycount');
-            $table->string('slug')->nullable();
-            $table->enum('type', ['article','note','photo','checkin','event','rsvp','like','bookmark','listen','watch','video','audio','tag','follow','unfollow','repost','snark','weight'])->default('note');
 
             //displayed data
             $table->longtext('content');
@@ -36,7 +35,7 @@ class Posts extends Migration
             $table->string('summary')->nullable();
             $table->string('syndication_extra')->nullable(); //used for bridgy publishing
             $table->string('created_by')->nullable(); //url or name of posting app
-            $table->timestamp('published');
+            $table->timestamp('published')->default(DB::raw('CURRENT_TIMESTAMP'));
 
 //note that in-reply-to is not listed here, it uses its own table to allow multiples
 
@@ -51,7 +50,11 @@ class Posts extends Migration
             $table->string('location')->nullable(); //stored as JSON
             $table->string('weight')->nullable(); //stored as JSON
 
-            //TODO: tags? followings?
+            // timestamps
+            $table->timestamps();
+            $table->softDeletes();
+
+            //TODO: tags?
         });
     }
 

@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class ContextSyndictaion extends Migration
+class UntrustedVouchers extends Migration
 {
     /**
      * Run the migrations.
@@ -13,9 +13,8 @@ class ContextSyndictaion extends Migration
      */
     public function up()
     {
-        Schema::create('context_syndictaion', function (Blueprint $table) {
-            $table->increments('id');
-            $table->timestamps();
+        Schema::create('untrusted_vouchers', function (Blueprint $table) {
+            $table->string('domain');
         });
     }
 
@@ -26,6 +25,6 @@ class ContextSyndictaion extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('context_syndictaion');
+        Schema::dropIfExists('untrusted_vouchers');
     }
 }

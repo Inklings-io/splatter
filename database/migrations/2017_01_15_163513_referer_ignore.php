@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class PersonUrl extends Migration
+class RefererIgnore extends Migration
 {
     /**
      * Run the migrations.
@@ -13,14 +13,9 @@ class PersonUrl extends Migration
      */
     public function up()
     {
-        Schema::create('person_url', function (Blueprint $table) {
+        Schema::create('referer_ignore', function (Blueprint $table) {
             $table->increments('id');
-            $table->string('url');
-            $table->boolean('primary')->default(false);
-            $table->integer('person_id')->unsigned();
-
-            $table->foreign('person_id')->references('id')->on('people');
-    
+            $table->string('url_match');
         });
     }
 
@@ -31,6 +26,6 @@ class PersonUrl extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('person_url');
+        Schema::dropIfExists('referer_ignore');
     }
 }

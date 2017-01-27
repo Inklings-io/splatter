@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class SyndicationSites extends Migration
+class PersonUrl extends Migration
 {
     /**
      * Run the migrations.
@@ -13,11 +13,15 @@ class SyndicationSites extends Migration
      */
     public function up()
     {
-        Schema::create('syndication_sites', function (Blueprint $table) {
+        Schema::create('person_url', function (Blueprint $table) {
             $table->increments('id');
-            $table->string('name');
-            $table->string('image');
-            $table->string('url_pattern');
+            $table->integer('person_id')->unsigned();
+            $table->string('url');
+            $table->boolean('primary')->default(false);
+
+            $table->foreign('person_id')->references('id')->on('people');
+
+    
         });
     }
 
@@ -28,6 +32,6 @@ class SyndicationSites extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('syndication_sites');
+        Schema::dropIfExists('person_url');
     }
 }

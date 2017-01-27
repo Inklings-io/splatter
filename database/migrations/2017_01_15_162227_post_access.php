@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class MediaPost extends Migration
+class PostAccess extends Migration
 {
     /**
      * Run the migrations.
@@ -13,12 +13,14 @@ class MediaPost extends Migration
      */
     public function up()
     {
-        Schema::create('media_post', function (Blueprint $table) {
+        Schema::create('post_access', function (Blueprint $table) {
+            $table->increments('id');
             $table->integer('post_id')->unsigned();
-            $table->integer('media_id')->unsigned();
-
+            $table->integer('person_id')->unsigned();
+            $table->boolean('displayed')->default(true);
+            
             $table->foreign('post_id')->references('id')->on('posts');
-            $table->foreign('media_id')->references('id')->on('media');
+            $table->foreign('person_id')->references('id')->on('people');
         });
     }
 
@@ -29,6 +31,6 @@ class MediaPost extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('media_post');
+        Schema::dropIfExists('post_access');
     }
 }

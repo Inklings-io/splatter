@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class PostSyndication extends Migration
+class MentionSendQueue extends Migration
 {
     /**
      * Run the migrations.
@@ -13,13 +13,10 @@ class PostSyndication extends Migration
      */
     public function up()
     {
-        Schema::create('post_syndication', function (Blueprint $table) {
+        Schema::create('mention_send_queue', function (Blueprint $table) {
             $table->increments('id');
-            $table->string('url');
-
-            $table->integer('syndication_site_id')->unsigned();
-
-            $table->foreign('syndication_site_id')->references('id')->on('syndication_sites');
+            $table->integer('post_id')->unsigned();
+            $table->foreign('post_id')->references('id')->on('posts');
         });
     }
 
@@ -30,6 +27,6 @@ class PostSyndication extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('post_syndication');
+        Schema::dropIfExists('mention_send_queue');
     }
 }

@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class Media extends Migration
+class Whitelist extends Migration
 {
     /**
      * Run the migrations.
@@ -13,13 +13,10 @@ class Media extends Migration
      */
     public function up()
     {
-        Schema::create('media', function (Blueprint $table) {
+        Schema::create('whitelist', function (Blueprint $table) {
             $table->increments('id');
-            $table->timestamps();
-            $table->enum('type', ['photo','video','audio'])->default('photo');
-            $table->string('alt')->nullable();
-            $table->string('path');
-
+            $table->string('domain');
+            $table->boolean('public')->default(true);
         });
     }
 
@@ -30,6 +27,6 @@ class Media extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('media');
+        Schema::dropIfExists('whitelist');
     }
 }

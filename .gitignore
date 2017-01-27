@@ -8,3 +8,5 @@ Homestead.yaml
 .env
 /public/image
 /public/favicon.ico
+database/homestead.sql
+database/inkblot-seed-data.sql

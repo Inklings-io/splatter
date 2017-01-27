@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CategoryPost extends Migration
+class InteractionPost extends Migration
 {
     /**
      * Run the migrations.
@@ -13,13 +13,14 @@ class CategoryPost extends Migration
      */
     public function up()
     {
-        Schema::create('category_post', function (Blueprint $table) {
+        Schema::create('interaction_post', function (Blueprint $table) {
+            $table->integer('interaction_id')->unsigned();
             $table->integer('post_id')->unsigned();
-            $table->integer('category_id')->unsigned();
 
+            $table->foreign('interaction_id')->references('id')->on('interactions');
             $table->foreign('post_id')->references('id')->on('posts');
-            $table->foreign('category_id')->references('id')->on('categories');
         });
+
     }
 
     /**
@@ -29,6 +30,6 @@ class CategoryPost extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('category_post');
+        Schema::dropIfExists('interaction_post');
     }
 }

@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class PostRelpyTo extends Migration
+class Tokens extends Migration
 {
     /**
      * Run the migrations.
@@ -13,11 +13,14 @@ class PostRelpyTo extends Migration
      */
     public function up()
     {
-        Schema::create('post_relpy_to', function (Blueprint $table) {
+        Schema::create('tokens', function (Blueprint $table) {
             $table->increments('id');
-            $table->string('url');
-            $table->integer('post_id')->unsigned();
-            $table->foreign('post_id')->references('id')->on('posts');
+            $table->string('checksum');
+            $table->string('scope');
+            $table->string('client_id');
+            $table->timestamp('last_used')->default(DB::raw('CURRENT_TIMESTAMP'));
+            $table->string('user');
+
         });
     }
 
@@ -28,6 +31,6 @@ class PostRelpyTo extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('post_relpy_to');
+        Schema::dropIfExists('tokens');
     }
 }

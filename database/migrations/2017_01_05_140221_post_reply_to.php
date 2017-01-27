@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class InteractionPost extends Migration
+class PostReplyTo extends Migration
 {
     /**
      * Run the migrations.
@@ -13,14 +13,12 @@ class InteractionPost extends Migration
      */
     public function up()
     {
-        Schema::create('interaction_post', function (Blueprint $table) {
+        Schema::create('post_reply_to', function (Blueprint $table) {
+            $table->increments('id');
             $table->integer('post_id')->unsigned();
-            $table->integer('interaction_id')->unsigned();
-
+            $table->string('url');
             $table->foreign('post_id')->references('id')->on('posts');
-            $table->foreign('interaction_id')->references('id')->on('interactions');
         });
-
     }
 
     /**
@@ -30,6 +28,6 @@ class InteractionPost extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('interaction_post');
+        Schema::dropIfExists('post_reply_to');
     }
 }

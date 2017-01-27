@@ -4,7 +4,8 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class Interactions extends Migration
+class Interactions 
+extends Migration
 {
     /**
      * Run the migrations.
@@ -15,21 +16,23 @@ class Interactions extends Migration
     {
         Schema::create('interactions', function (Blueprint $table) {
             $table->increments('id');
-            $table->integer('person_id')->unsigned;
-            //$table->integer('webmention_id')->unsigned;
-            $table->enum('type', ['reply','like','repost','mention','reacji'])->default('reply');
+            $table->integer('person_id')->unsigned();
+            $table->integer('webmention_id')->unsigned();
+            $table->enum('type', ['reply','like','repost','mention','reacji', 'rsvp'])->default('reply');
+            $table->boolean('person-mention')->default(false);
 
-            $table->softDeletes();
-            $table->timestamp('parsed');
             $table->boolean('approved')->default(false); 
-            $table->timestamp('published');
+            $table->timestamp('published')->nullable();
             $table->longtext('content');
             $table->string('name')->nullable();
             $table->string('url');
+            $table->string('rsvp');
 
             $table->timestamps();
+            $table->softDeletes();
 
-            $table->foreign('person_id')->references('id')->on('people');>
+            $table->foreign('person_id')->references('id')->on('people');
+            $table->foreign('webmention_id')->references('id')->on('webmentions');
 
             //more can be added for tagging and rsvp, etc
 

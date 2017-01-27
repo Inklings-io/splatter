@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class InteractionInteraction extends Migration
+class ContextContext extends Migration
 {
     /**
      * Run the migrations.
@@ -13,12 +13,12 @@ class InteractionInteraction extends Migration
      */
     public function up()
     {
-        Schema::create('interaction_interaction', function (Blueprint $table) {
+        Schema::create('context_context', function (Blueprint $table) {
             $table->integer('child_id')->unsigned();
             $table->integer('parent_id')->unsigned();
 
-            $table->foreign('parent_id')->references('id')->on('interactions');
-            $table->foreign('child_id')->references('id')->on('interactions');
+            $table->foreign('child_id')->references('id')->on('contexts');
+            $table->foreign('parent_id')->references('id')->on('contexts');
  
         });
     }
@@ -30,6 +30,6 @@ class InteractionInteraction extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('interaction_interaction');
+        Schema::dropIfExists('context_context');
     }
 }

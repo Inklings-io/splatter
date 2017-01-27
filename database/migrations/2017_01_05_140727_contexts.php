@@ -24,7 +24,7 @@ class Contexts extends Migration
 
             $table->timestamps();
 
-            $table->foreign('person_id')->references('id')->on('people');>
+            $table->foreign('person_id')->references('id')->on('people');
         });
     }
 
