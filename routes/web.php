@@ -16,6 +16,8 @@
 // });
 
 Route::get('/','PostController@home');
-Route::get('weight', 'PostController@viewweight');
-Route::get('{posttype}/{year}/{month}/{day}/{daycount}','PostController@view');
-Route::get('{posttype}/{year}/{month}/{day}/{daycount}/{slug}','PostController@view');
+Route::get('category/{name}', 'PostController@category');
+Route::get('{type}','PostController@typeFeed');
+Route::get('{year}/{month}','PostController@monthFeed')->where('year' => '[0-9]+', 'month' => '[0-9]+');
+Route::get('{type}/{year}/{month}/{day}/{daycount}','PostController@view');
+Route::get('{type}/{year}/{month}/{day}/{daycount}/{slug}','PostController@view');

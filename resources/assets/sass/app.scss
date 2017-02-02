@@ -3,17 +3,19 @@
 //@import url(https://fonts.googleapis.com/css?family=Raleway:300,400,600);
 
 // Variables
-//@import "variables";
+@import "variables";
 
-$grid-columns:               12 !default;
-$grid-gutter-width-base:     60px !default;
-$grid-gutter-widths: (
-  xs: $grid-gutter-width-base,
-  sm: $grid-gutter-width-base,
-  md: $grid-gutter-width-base,
-  lg: $grid-gutter-width-base,
-  xl: $grid-gutter-width-base
-) !default;
+ $container-lg: 1400px;
+ $grid-columns:               12 !default;
+ $grid-gutter-width-base:     60px !default;
+ $grid-gutter-widths: (
+   xs: $grid-gutter-width-base,
+   sm: $grid-gutter-width-base,
+   md: $grid-gutter-width-base,
+   lg: $grid-gutter-width-base,
+   xl: $grid-gutter-width-base
+ ) !default;
+
 // Bootstrap
 @import "node_modules/bootstrap-sass/assets/stylesheets/bootstrap";
 
@@ -22,28 +24,31 @@ body {
     background-color: #f0f0f0;
 }
 
-.mini-post {
-    border:1px solid #ccc;
-    box-shadow:0 1px 5px 0 rgba(0,0,0,0.2);
-    padding: 4px;
+.spostfeed {
     position:relative;
+    article {
+        width:100%;
+    }
+}
 
-    .post-author {
-        img {
-            max-width:50px;
-            max-height:50px;
+.postbox {
+    border:1px solid black;
+    box-shadow:0 1px 5px 0 rgba(0,0,0,0.2);
+    margin:10px;
+    padding: 20px;
+    background-color: white;
+
+    header {
+
+        permalink {
+            a {
+                color: #ddd;
+            }
         }
-        position:absolute;
-        top:0;
-        left:0;
-        right:0;
-        height: 50px;
-        background-color: #eee;
+
     }
 
-    .content {
-        margin-top:50px;
-        padding: 5px 10px;
-    }
+    //position:relative;
+
 }
 

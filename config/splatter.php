@@ -38,7 +38,7 @@ return [
     'owner' => [
         'name' => env('OWNER_NAME', 'Site Owner'),
         'url' => env('OWNER_URL', 'https://www.myurl.example/'),
-        'image_url' => env('OWNER_IMG_URL', 'https://www.myurl.example/image.jpg'),
+        'image' => env('OWNER_IMG_URL', 'https://www.myurl.example/image.jpg'),
         
 
     ],

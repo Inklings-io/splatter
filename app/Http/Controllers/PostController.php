@@ -4,41 +4,21 @@ namespace App\Http\Controllers;
 
 use DB;
 use App\Post;
+use App\Category;
 use Illuminate\Http\Request;
 
 class PostController extends Controller
 {
 
-    public function home()
-    {
-        $posts = Post::with('media')
-            ->orderBy('published', 'desc')
-            ->limit(20)
-            ->get();
-        $author = Array(
-            'name' => config('splatter.owner.name'),
-            'url' => config('splatter.owner.url'),
-            'image' => config('splatter.owner.image_url')
-            );
-        return view('home', ['posts' => $posts, 'author' => $author]);
-    }
-
-    public function viewweight()
-    {
-        return 'ok';
-    }
-    public function view($posttype, $year, $month, $day, $daycount, $slug = null)
+    public function view($type, $year, $month, $day, $daycount, $slug = null)
     {
         $post = Post::with('media')
             ->where(['year' => $year, 'month' => $month, 'day' => $day, 'daycount' => $daycount])
             ->get()->first();
-        $author = Array(
-            'name' => config('splatter.owner.name'),
-            'url' => config('splatter.owner.url'),
-            'image' => config('splatter.owner.image_url')
-            );
-        return $post;
-        // return view('posts.mini-default.blade', ['post' => $post, 'author' => $author]);
+        $author = config('splatter.owner');
+
+        // return $post;
+        return view('post', ['post' => $post, 'author' => $author]);
     
     }
 

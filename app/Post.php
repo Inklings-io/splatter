@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Post extends Model
 {
     use SoftDeletes;
-    
+
     protected $dates = ['created_at', 'updated_at', 'deleted_at'];
 
     public function media()
@@ -16,9 +16,26 @@ class Post extends Model
         return $this->belongsToMany('App\Media');
     }
 
-    public function permalink()
+    public function categories()
     {
-        return '/' . $this->post_type .
+        return $this->belongsToMany('App\Category');
+    }
+
+
+    public function getLocationAttribute($value)
+    {
+        return json_decode($value);
+    }
+
+
+    public function getWeightAttribute($value)
+    {
+        return json_decode($value);
+    }
+
+    public function getPermalinkAttribute()
+    {
+        return  $this->type .
                 '/'. $this->year .
                 '/'. $this->month .
                 '/'. $this->day .
