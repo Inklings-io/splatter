@@ -7711,4 +7711,36 @@ body {
   color: #ddd;
 }
 
+.reacji-container {
+  position: relative;
+}
+
+.reacji-sources {
+  display: none;
+  background-color: #34627d;
+  border-radius: 10px;
+  display: none;
+  padding: 10px;
+  position: absolute;
+  top: -5px;
+  left: 0;
+  white-space: nowrap;
+  min-width: 100px;
+  z-index: 100;
+  margin-top: 20px;
+}
+
+.reacji-sources a {
+  color: black;
+}
+
+.reacji-sources img {
+  height: 20px;
+  width: 20px;
+}
+
+.reacji-container:hover > .reacji-sources {
+  display: block;
+}
+
 /*# sourceMappingURL=app.css.map */

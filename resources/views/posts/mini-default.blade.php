@@ -1,4 +1,4 @@
-<article id="post-{{$post->post_id}}" class="container-fluid postbox {{$post->post_type}} h-entry {{ $post->draft == 1 ? 'draft':'' }} {{$post->deleted == 1 ? 'deleted':''}} " >
+<article id="post-{{$post->id}}" class="container-fluid postbox {{$post->type}} h-entry {{ $post->draft == 1 ? 'draft':'' }} {{$post->deleted_at == 1 ? 'deleted':''}} " >
 
 
   <header class="row">
@@ -30,7 +30,7 @@
     @endif
 
     <div class="col-lg-6">      
-      @if($post['post_type'] != 'listen')
+      @if($post['type'] != 'listen')
         <h1 class="p-name">
           <a class="u-url" href="{{$post->permalink}}" title="Permalink to <?php echo $post['name']?>" >
             <?php echo $post['name']?>
@@ -40,7 +40,7 @@
     </div>
 
     <div class="col-lg-6">      
-      @if($post['post_type'] == 'snark')
+      @if($post['type'] == 'snark')
         <h3>Sarcasm Alert</h3>
       @endif
     </div>
@@ -89,7 +89,7 @@
       </div>
     @endforeach
 
-    @if($post['post_type'] == 'listen')
+    @if($post['type'] == 'listen')
       <div class="col-sm-12">
         I listend To <span class="song-title">{{$post['name']}}</span>
         by <span class="song-artist">{{$post['artist']}}</span>
@@ -141,35 +141,30 @@
       <a href="{{$post->permalink}}" class="u-url">More...</a>
     @endif
 
-             
-    @if(!empty($post['reacjis']) )
+                 
+    @if(!empty($post->reacjis) )
       <span id="general-reacjis">
-        @foreach($post['reacjis'] as $reacji => $rdata)
+        @foreach($post->reacjis as $content=> $reacji)
           <span class="reacji-container">
-            <span class="reacji"><?php echo $reacji?></span>
-            <span class="reacji-count"><?php echo count($rdata)?></span>
+            <span class="reacji">{{$content}}</span>
+            <span class="reacji-count">{{$reacji->count()}}</span>
           </span>
           <span class="sep"> | </span>
         @endforeach
       </span>
     @endif
 
-    @if($post['comment_count'] > 0) 
-      <span class="comments-link"><a href="{{$post->permalink}}#comments" title="Comments for <?php echo $post['name']?>"><i class="fa fa-comment-o"></i> <?php echo $post['comment_count'] ?></a></span>
+  
+    @if($post->comments->count() > 0) 
+      <span class="comments-link"><a href="{{$post->permalink}}#comments" title="Comments for <?php echo $post['name']?>"><i class="fa fa-comment-o"></i> {{$post->comments->count()}}</a></span>
       <span class="sep"> | </span>
     @endif
 
-    @if($post['like_count'] > 0)
-    <span class="likes-link"><a href="{{$post->permalink}}#likes" title="Likes of <?php echo $post['name']?>"><i class="fa fa-heart-o"></i> <?php echo $post['like_count']?></a></span>
-    <span class="sep"> | </span>
-    @endif
-
-  
-    @if($post['repost_count'] > 0)
-      <span class="reposts-link"><a href="{{$post->permalink}}#reposts" title="reposts of <?php echo $post['name']?>"><i class="fa fa-retweet"></i> <?php echo $post['repost_count']?></a></span>
+    @if($post->reposts->count() > 0)
+    <span class="reposts-link"><a href="{{$post->permalink}}#reposts" title="reposts of <?php echo $post['name']?>"><i class="fa fa-retweet"></i> {{$post->reposts->count()}}</a></span>
       <span class="sep"> | </span>
     @endif
-  
+
     @if($post['categories'])
       @foreach($post['categories'] as $category)
         @if(isset($category['person_name']))

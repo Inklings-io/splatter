@@ -13,8 +13,8 @@
       <link rel="stylesheet" href="/css/old/normalize.css">
       <link rel="stylesheet" href="/css/old/main.css">
       <link rel='stylesheet' id='sempress-style-css'  href='/css/old/stylesheet.css' type='text/css' media='all' />
-    -->
     <link href="/view/shared/font-awesome-4.2.0/css/font-awesome.css" rel="stylesheet">
+    -->
 
   </head>
 

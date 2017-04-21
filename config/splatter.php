@@ -30,7 +30,7 @@ return [
     | If you have multiple user tables or models you may configure multiple
     | sources which represent each model / table. These sources may then
     | be assigned to any extra authentication guards you have defined.
-    |
+    |`
     | Supported: "database", "eloquent"
     |
     */
@@ -41,6 +41,18 @@ return [
         'image' => env('OWNER_IMG_URL', 'https://www.myurl.example/image.jpg'),
         
 
+    ],
+
+    'me' => [
+        //to disable all options, comment out all options in this block;
+    
+        'facebook' => env('FACEBOOK_URL', false),
+        'twitter' =>  env('TWITTER_URL', 'https://www.twitter.com/username'),
+        'github' =>   env('GITHUB_URL', false),
+    
+        // Add as many sites as you like here
+        //  'somesite' => 'https://www.site.example/',
+        // 
     ],
 
 

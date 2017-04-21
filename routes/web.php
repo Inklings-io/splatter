@@ -15,9 +15,11 @@
     // return view('welcome');
 // });
 
-Route::get('/','PostController@home');
-Route::get('category/{name}', 'PostController@category');
-Route::get('{type}','PostController@typeFeed');
-Route::get('{year}/{month}','PostController@monthFeed')->where('year' => '[0-9]+', 'month' => '[0-9]+');
+Route::get('/','FeedController@home');
+Route::get('category/{name}', 'FeedController@category');
+Route::get('{type}','FeedController@typeFeed');
+
+Route::get('{year}/{month}','PostController@monthFeed')->where(['year' => '[0-9]+', 'month' => '[0-9]+']);
+
 Route::get('{type}/{year}/{month}/{day}/{daycount}','PostController@view');
 Route::get('{type}/{year}/{month}/{day}/{daycount}/{slug}','PostController@view');

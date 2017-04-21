@@ -60,7 +60,7 @@ class FeedController extends Controller
     }
 
    
-    private function basicRenderedSearch($where_array = null){
+    private function basicSearch($where_array = null){
 
         return Post::with('media')
             ->with('categories')

@@ -1,6 +1,6 @@
 
 // Fonts
-//@import url(https://fonts.googleapis.com/css?family=Raleway:300,400,600);
+// @import url(https://fonts.googleapis.com/css?family=Raleway:300,400,600);
 
 // Variables
 @import "variables";
@@ -50,5 +50,38 @@ body {
 
     //position:relative;
 
+}
+
+.reacji-container, 
+.repost-container {
+    position:relative;
+}
+.reacji-sources,
+.repost-sources {
+  display:none ;
+  background-color: #34627d;
+  border-radius: 10px;
+  display: none;
+  padding: 10px;
+  position: absolute;
+  top:-5px;
+  left:0;
+  white-space: nowrap;
+  min-width:100px;
+  z-index:100;
+  margin-top:20px;
+
+  a {
+      color:black
+  }
+  img {
+      height:20px;
+      width:20px;
+  }
+
+}
+.reacji-container:hover > .reacji-sources ,
+.repost-container:hover > .repost-sources {
+    display:block ;
 }
 

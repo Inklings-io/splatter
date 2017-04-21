@@ -55,7 +55,7 @@
 </section>
 @endif
 
-@if (isset($categories))
+@if (!empty($categories))
 <section id="categories-2" class="widget widget_categories">
 <h3 class="widget-title">Categories</h3>
 <ul>
@@ -68,11 +68,13 @@
 </section>
 @endif
 
-@if (isset($mylinks))
+@if ($rel_mes and !empty($rel_mes))
 <section id="linkcat-3" class="widget widget_links"><h3 class="widget-title">Elsewhere</h3>
     <ul>
-        <?php foreach($mylinks as $mylink){?>
-            <li><a href="<?php echo $mylink['url'];?>" rel="<?php echo $mylink['rel']?>" title="<?php echo $mylink['title'];?>" target="<?php echo $mylink['target'];?>"><?php echo $mylink['value'];?></a></li>
+        <?php foreach($rel_mes as $label => $me_link){?>
+            <li>
+                <a href="{{$me_link}}>" rel="me" title="{{$label}}" target="_blank">{{$label}}</a>
+            </li>
         <?php } ?>
     </ul>
 </section>
