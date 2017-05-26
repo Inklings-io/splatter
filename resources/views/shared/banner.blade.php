@@ -3,3 +3,18 @@
     <h2 id="site-description" class="p-role p-summary e-content">Developer &amp; Technologist</h2>
 
   </header>
+    {!! IndieAuth::login_logout_form() !!}
+
+    @if (IndieAuth::is_logged_in())
+        <div>Logged In As: {!! IndieAuth::user() !!}</div>
+
+    @endif
+
+    <div class="notification">
+        @if (Session::has('success'))
+            <div class="flash_success">{{ session('success') }}</div>
+        @endif
+        @if (Session::has('error'))
+            <div class="flash_error">{{ session('error') }}</div>
+        @endif
+    </div>

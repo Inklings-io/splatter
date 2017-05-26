@@ -17,9 +17,11 @@
 
 Route::get('/','FeedController@home');
 Route::get('category/{name}', 'FeedController@category');
+
+//NOTE: patterns for type, year, month, day, and daycount are in RouteServiceProvider
+Route::get('{year}','FeedController@yearFeed');
+Route::get('{year}/{month}','FeedController@monthFeed');
+Route::get('{type_any}/{year}/{month}/{day}/{daycount}','PostController@view');
+Route::get('{type_any}/{year}/{month}/{day}/{daycount}/{slug}','PostController@view');
 Route::get('{type}','FeedController@typeFeed');
-
-Route::get('{year}/{month}','PostController@monthFeed')->where(['year' => '[0-9]+', 'month' => '[0-9]+']);
-
-Route::get('{type}/{year}/{month}/{day}/{daycount}','PostController@view');
-Route::get('{type}/{year}/{month}/{day}/{daycount}/{slug}','PostController@view');
+Route::get('{type_i}','FeedController@typeFeedRedir');

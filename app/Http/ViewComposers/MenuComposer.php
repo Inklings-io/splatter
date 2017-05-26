@@ -7,7 +7,7 @@ use App\Post;
 use App\Category;
 
 use Illuminate\View\View;
-
+use IndieAuth;
 
 class MenuComposer
 {
@@ -18,11 +18,15 @@ class MenuComposer
 
     public function __construct()
     {
-        $this->recent_drafts = Post::where('draft', 1)
-            ->orderBy('published', 'desc')
-            ->limit(10)
-            ->get();
-
+        if(IndieAuth::is_user('ben.thatmustbe.me')){
+            $this->recent_drafts = Post::where('draft', 1)
+                ->orderBy('published', 'desc')
+                ->limit(10)
+                ->get();
+        } else {
+            $this->recent_drafts = [];
+        }
+        
         $this->top_categories = Category::orderBy('name')->get()
         ->reject(function($category){
             return empty($category->name) || $category->posts_count < 2; 

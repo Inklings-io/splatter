@@ -24,6 +24,15 @@ class RouteServiceProvider extends ServiceProvider
     public function boot()
     {
         //
+        Route::pattern('type', '(article|note|photo|checkin|event|rsvp|like|bookmark|listen|watch|video|audio|tag|follow|unfollow|repost|snark|weight)');
+        
+        Route::pattern('type_i', '(?i)(article|note|photo|checkin|event|rsvp|like|bookmark|listen|watch|video|audio|tag|follow|unfollow|repost|snark|weight)(?-i)');
+        Route::pattern('type_any', '[a-zA-Z]+');
+        
+        Route::pattern('year', '[0-9][0-9][0-9][0-9]');
+        Route::pattern('month', '(0?[0-9]|1[0-2])');
+        Route::pattern('day', '([0-2]?[0-9]|3[01])');
+        Route::pattern('daycount', '[0-9]+');
 
         parent::boot();
     }

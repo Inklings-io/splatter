@@ -10,3 +10,4 @@ Homestead.yaml
 /public/favicon.ico
 database/homestead.sql
 database/inkblot-seed-data.sql
+packages
