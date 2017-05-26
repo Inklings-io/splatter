@@ -243,16 +243,16 @@
         },
         {
             "name": "inklings.io/laravel-indieauth-client",
-            "version": "0.1.0",
+            "version": "0.1.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Inklings-io/laravel-indieauth-client.git",
-                "reference": "2221c758b14a3904e367400168e9aee51d9ec296"
+                "reference": "808b464c5b658f6786859bf1fa141d97b7ccf468"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Inklings-io/laravel-indieauth-client/zipball/2221c758b14a3904e367400168e9aee51d9ec296",
-                "reference": "2221c758b14a3904e367400168e9aee51d9ec296",
+                "url": "https://api.github.com/repos/Inklings-io/laravel-indieauth-client/zipball/808b464c5b658f6786859bf1fa141d97b7ccf468",
+                "reference": "808b464c5b658f6786859bf1fa141d97b7ccf468",
                 "shasum": ""
             },
             "require": {
@@ -276,7 +276,7 @@
                 }
             ],
             "description": "Laravel package for indieauth based authentication",
-            "time": "2017-05-25 15:16:09"
+            "time": "2017-05-26 17:49:25"
         },
         {
             "name": "laravel/framework",
