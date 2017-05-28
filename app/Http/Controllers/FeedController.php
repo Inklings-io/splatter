@@ -6,16 +6,27 @@ use DB;
 use App\Post;
 use App\Category;
 use Illuminate\Http\Request;
+use Illuminate\Database\Eloquent\SoftDeletingScope;
+use IndieAuth;
 
 class FeedController extends Controller
 {
    
     public function home()
     {
-        $posts = Post::with('media')
-            ->with('categories')
-            ->orderBy('published', 'desc')
-            ->simplePaginate(20);
+        $owner = trim(config('splatter.owner.url'), '/');
+        if(IndieAuth::is_user($owner)){
+            $posts = Post::withoutGlobalScope(SoftDeletingScope::class)
+                ->where('draft', 0)->with('media')
+                ->with('categories')
+                ->orderBy('published', 'desc')
+                ->simplePaginate(20);
+        } else {
+            $posts = Post::where('draft', 0)->with('media')
+                ->with('categories')
+                ->orderBy('published', 'desc')
+                ->simplePaginate(20);
+        }
             
         $author = config('splatter.owner');
 
@@ -51,14 +62,26 @@ class FeedController extends Controller
 
     public function category($name)
     {
-        $posts = Post::with('media')
-            ->with('categories')
-            ->whereHas('categories', function($query) use ($name) {
-                $query->where('name',$name);
-            })
-            ->orderBy('published', 'desc')
-            ->simplePaginate(20);
-            
+        $owner = trim(config('splatter.owner.url'), '/');
+        if(IndieAuth::is_user($owner)){
+            $posts = Post::withoutGlobalScope(SoftDeletingScope::class)
+                ->where('draft', 0)->with('media')
+                ->with('categories')
+                ->whereHas('categories', function($query) use ($name) {
+                    $query->where('name',$name);
+                })
+                ->orderBy('published', 'desc')
+                ->simplePaginate(20);
+        } else {
+            $posts = Post::where('draft', 0)->with('media')
+                ->with('categories')
+                ->whereHas('categories', function($query) use ($name) {
+                    $query->where('name',$name);
+                })
+                ->orderBy('published', 'desc')
+                ->simplePaginate(20);
+        }
+
             
         $author = config('splatter.owner');
         return view('feed', ['feed_name' => "$name Category", 'posts' => $posts, 'author' => $author]);        
@@ -67,11 +90,21 @@ class FeedController extends Controller
    
     private function basicSearch($where_array = null){
 
-        return Post::with('media')
-            ->with('categories')
-            ->where($where_array)
-            ->orderBy('published', 'desc')
-            ->simplePaginate(20);
+        $owner = trim(config('splatter.owner.url'), '/');
+        if(IndieAuth::is_user($owner)){
+            return Post::withoutGlobalScope(SoftDeletingScope::class)
+                ->where('draft', 0)-> with('media')
+                ->with('categories')
+                ->where($where_array)
+                ->orderBy('published', 'desc')
+                ->simplePaginate(20);
+        } else {
+            return Post::where('draft', 0)-> with('media')
+                ->with('categories')
+                ->where($where_array)
+                ->orderBy('published', 'desc')
+                ->simplePaginate(20);
+        }
             
     }
 

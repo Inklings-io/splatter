@@ -1,6 +1,6 @@
   <footer id="colophon" role="contentinfo">
     <div id="site-generator">
-      This site is powered by <a href="https://github.com/dissolve/inkblot"><img style="width:20px;" src="/image/inkblot.svg"/>Splatter</a> an 
+      This site is powered by <a href="https://github.com/inklings-io/splatter"><img style="width:20px;" src="/image/inkblot.svg"/>Splatter</a> an 
       <a href="https://inklings.io/"><img style="width:20px;" src="/image/inkling.svg"/>Inkling Project</a>
     </div>
   </footer><!-- #colophon -->

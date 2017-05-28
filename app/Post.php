@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Log;
 use DB;
+use App\Scopes\AuthorizedScope;
 
 class Post extends Model
 {
@@ -13,9 +14,21 @@ class Post extends Model
 
     protected $dates = ['created_at', 'updated_at', 'deleted_at'];
 
+    protected static function boot()
+    {
+        parent::boot();
+        static::addGlobalScope(new AuthorizedScope);
+    }
+
     public function media()
     {
         return $this->belongsToMany('App\Media');
+    }
+
+    public function acls()
+    {
+        return $this->belongsToMany('App\Person', 'post_access', 'post_id','person_id')->withPivot('displayed');
+
     }
 
     public function categories()

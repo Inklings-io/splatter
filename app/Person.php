@@ -17,4 +17,9 @@ class Person extends Model
     {
         return DB::table('person_url')->where(['person_id' => $this->id, 'primary' => true])->get()->first()->url;
     }
+
+    public function urls()
+    {
+        return $this->hasMany('PersonUrls');
+    }
 }

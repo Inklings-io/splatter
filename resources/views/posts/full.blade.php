@@ -1,7 +1,7 @@
 <!-- todo: add contexts -->
 
 
-<article id="post-{{$post->id}}" class="container-fluid postbox {{$post->type}} {{ $post->draft == 1 ? 'draft':'' }} {{$post->deleted_at == 1 ? 'deleted':''}} " >
+<article id="post-{{$post->id}}" class="container-fluid postbox {{$post->type}} {{ $post->draft == 1 ? 'draft':'' }} {{$post->deleted_at ? 'deleted':''}} " >
 
   <header class="row">
     <span class="col-lg-6 postauthor  p-author h-card">

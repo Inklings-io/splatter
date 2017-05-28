@@ -169,7 +169,7 @@ return [
          * Package Service Providers...
          */
 
-        //
+        Inklings\IndieAuth\IndieAuthClientServiceProvider::class,
 
         /*
          * Application Service Providers...
@@ -179,7 +179,6 @@ return [
         // App\Providers\BroadcastServiceProvider::class,
         App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
-        Inklings\IndieAuth\IndieAuthClientServiceProvider::class,
 
     ],
 

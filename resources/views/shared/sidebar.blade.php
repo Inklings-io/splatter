@@ -131,7 +131,7 @@
 
     <?php if(isset($webaction)){ ?>
       <section id='webaction' class="widget">
-        <button onclick=" window.navigator.registerProtocolHandler('web+action', '<?php echo $webaction;?>' , 'InkBlot');" value="" >Register Your Handler</button>
+        <button onclick=" window.navigator.registerProtocolHandler('web+action', '<?php echo $webaction;?>' , 'splatter');" value="" >Register Your Handler</button>
       </section>
     <?php } ?>
 

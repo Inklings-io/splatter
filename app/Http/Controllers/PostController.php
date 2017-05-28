@@ -6,6 +6,8 @@ use DB;
 use App\Post;
 use App\Category;
 use Illuminate\Http\Request;
+use Illuminate\Database\Eloquent\SoftDeletingScope;
+use IndieAuth;
 use Log;
     
 
@@ -14,21 +16,29 @@ class PostController extends Controller
 
     public function view($type, $year, $month, $day, $daycount, $slug = '')
     {
-        $post = Post::with('media')
+        //remove the soft delete scope to allow to return 410 gone on deleted items
+        $post = Post::withoutGlobalScope(SoftDeletingScope::class)->with('media')
             ->with('interactions')
             ->where(['year' => $year, 'month' => $month, 'day' => $day, 'daycount' => $daycount])
             ->get()->first();
-        if($type != $post->type || $slug != $post->slug){
-            $type = $post->type;
-            $slug = $post->slug;
-            return redirect("/$type/$year/$month/$day/$daycount/$slug");
+        if($post){
+
+            $owner = trim(config('splatter.owner.url'), '/');
+
+            if($post->deleted_at && !IndieAuth::is_user($owner)){
+                abort(410);
+            }
+            if($type != $post->type || $slug != $post->slug){
+                $type = $post->type;
+                $slug = $post->slug;
+                return redirect("/$type/$year/$month/$day/$daycount/$slug");
+            }
+
+            $author = config('splatter.owner');
+            return view('post', ['post' => $post, 'author' => $author]);
+        } else {
+            abort(404);
         }
-        $author = config('splatter.owner');
-
-        //Log::debug('asdf: ' . $year);
-
-        // return $post;
-        return view('post', ['post' => $post, 'author' => $author]);
     
     }
 

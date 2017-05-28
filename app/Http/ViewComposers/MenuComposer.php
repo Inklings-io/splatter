@@ -18,7 +18,9 @@ class MenuComposer
 
     public function __construct()
     {
-        if(IndieAuth::is_user('ben.thatmustbe.me')){
+        $owner = trim(config('splatter.owner.url'), '/');
+
+        if(IndieAuth::is_user($owner)) {
             $this->recent_drafts = Post::where('draft', 1)
                 ->orderBy('published', 'desc')
                 ->limit(10)
