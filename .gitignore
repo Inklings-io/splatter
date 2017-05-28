@@ -11,3 +11,5 @@ Homestead.yaml
 database/homestead.sql
 database/inkblot-seed-data.sql
 packages
+public/upload
+public/static
