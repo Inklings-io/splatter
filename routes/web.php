@@ -18,6 +18,8 @@
 Route::get('/','FeedController@home');
 Route::get('category/{name}', 'FeedController@category');
 
+Route::get('s/{eid}','PostController@shortener');
+
 //NOTE: patterns for type, year, month, day, and daycount are in RouteServiceProvider
 Route::get('{year}','FeedController@yearFeed');
 Route::get('{year}/{month}','FeedController@monthFeed');

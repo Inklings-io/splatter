@@ -15,6 +15,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot()
     {
         View::composer('shared.sidebar','App\Http\ViewComposers\MenuComposer');
+        View::composer('baselayout','App\Http\ViewComposers\BaseLayoutComposer');
 
     }
 

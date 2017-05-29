@@ -13,6 +13,12 @@ use Log;
 
 class PostController extends Controller
 {
+    public function shortener($eid){
+        $post_id = Post::unshorten($eid);
+
+        $post = Post::find($post_id);
+        return redirect($post->permalink);
+    }
 
     public function view($type, $year, $month, $day, $daycount, $slug = '')
     {

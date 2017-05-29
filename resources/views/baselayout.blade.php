@@ -22,9 +22,14 @@
   <body class="home container {{$bodyclass}}">
     <div class="row">
       <div class="col-sm-12">
-        <header class="{{($bodyclass == 'h-card' ? '' : 'h-card') }}" id="headBanner" role="banner">
-          <h1 id="site-title" class="p-name"><a href="/" title="Ben Roberts" rel="home" class="u-url">Ben Roberts</a></h1>
-          <h2 id="site-description" class="p-role p-summary e-content">Developer &amp; Technologist</h2>
+        <header class="{{($bodyclass == 'h-card' ? '' : 'p-author h-card') }}" id="headBanner" role="banner">
+          <h1 id="site-title" class="p-name"><a href="{{$app_url}}" title="{{$site_name}}" rel="home">{{$site_name}}</a></h1>
+          <h2><a class="p-name u-url" href="{{$owner['url']}}" title="{{$owner['name']}}">{{$owner['name']}}</a></h2>
+          @if(isset($owner['role']) && !empty($owner['role']))
+            <h3 id="site-description" class="p-role">{{$owner['role']}}</h3>
+          @endif
+
+          <img class="u-photo" src='{{$owner['image']}}' height='40' width='40' style="display:none;"/>
 
         </header>
         {!! IndieAuth::login_logout_form() !!}

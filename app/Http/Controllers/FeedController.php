@@ -30,21 +30,21 @@ class FeedController extends Controller
             
         $author = config('splatter.owner');
 
-        return view('feed', ['feed_name' => 'Home Page Feed', 'posts' => $posts, 'author' => $author]);
+        return view('feeds.home', ['feed_name' => 'Home Page Feed', 'posts' => $posts, 'author' => $author]);
     }
 
     public function monthFeed($year, $month)
     {
         $posts = $this->basicSearch(['year' => $year, 'month' => $month]);      
         $author = config('splatter.owner');
-        return view('feed', ['feed_name' => "Month of $year-$month", 'posts' => $posts, 'author' => $author]);
+        return view('feeds.default', ['feed_name' => "Month of $year-$month", 'posts' => $posts, 'author' => $author]);
     }
 
     public function yearFeed($year)
     {
         $posts = $this->basicSearch(['year' => $year]);      
         $author = config('splatter.owner');
-        return view('feed', ['feed_name' => "Year of $year", 'posts' => $posts, 'author' => $author]);
+        return view('feeds.default', ['feed_name' => "Year of $year", 'posts' => $posts, 'author' => $author]);
     }
 
 
@@ -52,7 +52,7 @@ class FeedController extends Controller
     {
         $posts = $this->basicSearch(['type' => $type]);
         $author = config('splatter.owner');
-        return view('feed', ['feed_name' => "$type Feed", 'posts' => $posts, 'author' => $author]);
+        return view('feeds.default', ['feed_name' => "$type Feed", 'posts' => $posts, 'author' => $author]);
     }
 
     public function typeFeedRedir($type_i)
@@ -84,7 +84,7 @@ class FeedController extends Controller
 
             
         $author = config('splatter.owner');
-        return view('feed', ['feed_name' => "$name Category", 'posts' => $posts, 'author' => $author]);        
+        return view('feeds.default', ['feed_name' => "$name Category", 'posts' => $posts, 'author' => $author]);        
     }
 
    

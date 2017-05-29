@@ -2,13 +2,6 @@
 
 
   <header class="row">
-    <span class="col-lg-6 postauthor  p-author h-card">
-      <img class="u-photo" alt='Post by' src='{{$author['image']}}' height='40' width='40' />
-      <a class="u-url p-name" href="{{$author['url']}}" title="{{$author['name']}}">
-        {{$author['name']}}
-      </a>
-    </span>
-
     <span class="col-lg-2 permalink">
       <a class="u-url" href="{{$post->permalink}}" title="Permalink to <?php echo $post['name']?>" >
         <i class="fa fa-link"></i> 
@@ -21,6 +14,10 @@
           <?php echo date("F j, Y", strtotime($post->published))?>
         </time>
       </a>
+    </span>
+
+    <span class="col-lg-2">      
+      <a class="u-url" href="{{$post->shortlink}}">shortlink</a>
     </span>
 
     @if($post['in-reply-to'])
