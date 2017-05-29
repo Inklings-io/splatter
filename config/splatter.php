@@ -14,8 +14,11 @@ return [
     */
 
     'site' => [
-        'url' => env('SITE_URL', 'https://www.myurl.example/'),
-        'short_url' => env('SHORT_URL', false),
+        'name' => env('SITE_NAME', 'myurl.example'),
+
+        //This should use APP_URL instead
+        //'url' => env('SITE_URL', 'https://www.myurl.example/'),
+        'short_url' => env('SHORT_URL', env('APP_URL', false)),
     ],
 
     /*
@@ -39,6 +42,7 @@ return [
         'name' => env('OWNER_NAME', 'Site Owner'),
         'url' => env('OWNER_URL', 'https://www.myurl.example/'),
         'image' => env('OWNER_IMG_URL', 'https://www.myurl.example/image.jpg'),
+        'role' => env('OWNER_ROLE', null),
         
 
     ],
