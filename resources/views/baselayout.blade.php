@@ -32,12 +32,6 @@
           <img class="u-photo" src='{{$owner['image']}}' height='40' width='40' style="display:none;"/>
 
         </header>
-        {!! IndieAuth::login_logout_form() !!}
-
-        @if (IndieAuth::is_logged_in())
-            <div>Logged In As: {!! IndieAuth::user() !!}</div>
-
-        @endif
 
         <div class="notification">
             @if (Session::has('success'))

@@ -1,5 +1,7 @@
 <aside id="sidebar">
   <div id="secondary" class="widget-area" role="complementary">
+
+<!--
     <section id="search-2" class="widget widget_search">
       <form role="search" method="get" class="search-form" action="https://www.google.com/search">
         <label>
@@ -11,6 +13,11 @@
         <input type="submit" class="search-submit" value="Search" />
       </form>
     </section>
+-->
+    @if (IndieAuth::is_logged_in())
+        <div id="user_info">Logged In As: {!! IndieAuth::user() !!}</div>
+    @endif
+    {!! IndieAuth::login_logout_form() !!}
 
     <?php if(isset($moderation_count) && $moderation_count) { ?>
       <section id="moderation" class="widget widget_recent_entries">
