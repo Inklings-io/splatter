@@ -2,12 +2,19 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <link rel="stylesheet" href="{{elixir('css/app.css')}}" />
+    <link rel="stylesheet" href="{{mix('css/app.css')}}" />
 
     @yield('header')
 
     <link rel="profile" href="http://microformats.org/profile/specs" />
     <link rel="profile" href="http://microformats.org/profile/hatom" />
+
+    <link rel="authorization_endpoint" href="https://indieauth.com/auth">
+    <link rel="webmention" href="/api/webmentions">
+    <link rel="token" href="/api/token">
+    <link rel="micropub" href="/api/micropub">
+
+    <link rel="authorization_endpoint" href="https://indieauth.com/auth">
 
     <!--
       <link rel="stylesheet" href="/css/old/normalize.css">

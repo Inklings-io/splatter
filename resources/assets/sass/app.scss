@@ -24,10 +24,13 @@ body {
     background-color: #f0f0f0;
 }
 
-.spostfeed {
+.postfeed {
     position:relative;
     article {
         width:100%;
+        img {
+            width:100%;
+        }
     }
 }
 

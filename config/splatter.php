@@ -15,10 +15,14 @@ return [
 
     'site' => [
         'name' => env('SITE_NAME', 'myurl.example'),
-
         //This should use APP_URL instead
         //'url' => env('SITE_URL', 'https://www.myurl.example/'),
         'short_url' => env('SHORT_URL', env('APP_URL', false)),
+    ],
+
+    'webmention' => [
+        'enabled' => env('USE_WEBMENTION', true),
+        'use_vouch' => env('USE_VOUCH', false)
     ],
 
     /*
