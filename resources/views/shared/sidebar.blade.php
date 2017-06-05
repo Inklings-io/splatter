@@ -80,7 +80,7 @@
         <ul>
           <?php foreach($rel_mes as $label => $me_link){?>
             <li>
-              <a href="{{$me_link}}>" rel="me" title="{{$label}}" target="_blank">{{$label}}</a>
+              <a href="{{$me_link}}" rel="me" title="{{$label}}" target="_blank">{{$label}}</a>
             </li>
           <?php } ?>
         </ul>
