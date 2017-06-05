@@ -53,10 +53,8 @@ class WebmentionController extends Controller
             $webmention->status = 449;
             $webmention->save();
 
-            //can you return custom header text?
-            $response = response('Retry With vouch');
-            $response->setStatusCode(449, 'Reply With vouch');
-            return $response;
+            return response('Retry With vouch')
+                ->setStatusCode(449, 'Reply With vouch');
 
         } elseif ($this->isApprovedSource($vouch)) {
             $webmention = new Webmention;
@@ -77,10 +75,8 @@ class WebmentionController extends Controller
             $webmention->status = 449;
             $webmention->save();
 
-            //can you return custom header text?
-            $response = response('Retry With vouch');
-            $response->setStatusCode(449, 'Reply With vouch');
-            return $response;
+            return response('Retry With vouch')
+                ->setStatusCode(449, 'Reply With vouch');
         }
 
     }

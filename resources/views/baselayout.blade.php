@@ -16,6 +16,12 @@
 
     <link rel="authorization_endpoint" href="https://indieauth.com/auth">
 
+    @if(!empty($added_headers))
+      @foreach($added_headers as $added_header)
+        {!! $added_header !!}
+      @endforeach
+    @endif
+
     <!--
       <link rel="stylesheet" href="/css/old/normalize.css">
       <link rel="stylesheet" href="/css/old/main.css">

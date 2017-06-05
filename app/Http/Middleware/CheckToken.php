@@ -37,9 +37,11 @@ class CheckToken
         $token_obj->last_used = Carbon::now();
         $token_obj->save();
 
-        $request->attributes->add(['scope' => $token_obj->scope]);
-        $request->attributes->add(['client_id' => $token_obj->client_id]);
-        $request->attributes->add(['user' => $token_obj->user]);
+        $request->attributes->add([
+            'scope' => explode(' ', $token_obj->scope),
+            'client_id' => $token_obj->client_id,
+            'user' => $token_obj->user
+        ]);
 
         return $next($request);
     }

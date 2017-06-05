@@ -162,8 +162,8 @@
       <span class="sep"> | </span>
     @endif
 
-    @if($post['categories'])
-      @foreach($post['categories'] as $category)
+    @if($post->categories)
+      @foreach($post->categories as $category)
         @if(isset($category['person_name']))
           <span class="category-link">
             <a class="u-category h-card" href="<?php echo $category['url']?>" title="<?php echo $category['url']?>">

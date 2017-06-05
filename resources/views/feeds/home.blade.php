@@ -1,4 +1,4 @@
-@extends('baselayout', ['bodyclass' => 'h-card'])
+@extends('baselayout', ['bodyclass' => 'h-card', 'added_headers' => ['<link rel="alternate" type="application/json+jf2feed" href="/jf2feed">']] )
 
 @section('content')
 <div class="postfeed h-feed" id="posts-stream">
