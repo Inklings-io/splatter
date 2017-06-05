@@ -16,7 +16,10 @@ class PostController extends Controller
     public function shortener($eid){
         $post_id = Post::unshorten($eid);
 
-        $post = Post::find($post_id);
+        $post = Post::withoutGlobalScope(SoftDeletingScope::class)->find($post_id);
+        if($post == null){
+            abort(404);
+        }
         return redirect($post->permalink);
     }
 

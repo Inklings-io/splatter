@@ -16,9 +16,11 @@
       </a>
     </span>
 
+    @if(!$post->deleted_at)
     <span class="col-lg-2">      
       <a class="u-url" href="{{$post->shortlink}}">shortlink</a>
     </span>
+    @endif
 
     @if($post['in-reply-to'])
       <span class="col-lg-2">      
