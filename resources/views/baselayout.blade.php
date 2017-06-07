@@ -11,7 +11,7 @@
 
     <link rel="authorization_endpoint" href="https://indieauth.com/auth">
     <link rel="webmention" href="/api/webmentions">
-    <link rel="token" href="/api/token">
+    <link rel="token_endpoint" href="/api/token">
     <link rel="micropub" href="/api/micropub">
 
     <link rel="authorization_endpoint" href="https://indieauth.com/auth">

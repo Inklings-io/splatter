@@ -8,7 +8,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Log;
 
-//require_once base_path('vendor/indieauth/client/src/IndieAuth/Client.php');
+require_once base_path('vendor/indieauth/client/src/IndieAuth/Client.php');
 //
 //require_once DIR_BASE . 'libraries/php-mf2/Mf2/Parser.php';
 //require_once DIR_BASE . 'libraries/link-rel-parser-php/src/IndieWeb/link_rel_parser.php';
