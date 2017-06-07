@@ -12,35 +12,108 @@ use IndieAuth;
 class FeedController extends Controller
 {
    
-    public function home()
+    public function home($format = null)
     {
         $owner = trim(config('splatter.owner.url'), '/');
-        if(IndieAuth::is_user($owner)){
-            $posts = Post::withoutGlobalScope(SoftDeletingScope::class)
-                ->where('draft', 0)->with('media')
-                ->with('categories')
-                ->orderBy('published', 'desc')
-                ->simplePaginate(20);
-        } else {
-            $posts = Post::where('draft', 0)->with('media')
-                ->with('categories')
-                ->orderBy('published', 'desc')
-                ->simplePaginate(20);
-        }
-            
-        $author = config('splatter.owner');
-
-        return view('feeds.home', ['feed_name' => 'Home Page Feed', 'posts' => $posts, 'author' => $author]);
-    }
-
-    public function home_jf2()
-    {
-        $posts = Post::where('draft', 0)->with('media')
-            ->with('categories')
+        $posts = $this->postFetch()
             ->orderBy('published', 'desc')
             ->simplePaginate(20);
         $author = config('splatter.owner');
 
+        if($format=='jf2'){
+            return $this->sendJF2($posts, $author);
+        } elseif($format=='yaml'){
+            return $this->sendYAML($posts, $author);
+        } else {
+            return view('feeds.home', ['feed_name' => 'Home Page Feed', 'posts' => $posts, 'author' => $author]);
+        }
+
+    }
+
+    public function home_jf2()
+    {
+        return $this->home('jf2');
+    }
+    public function home_yaml()
+    {
+        return $this->home('yaml');
+    }
+
+
+
+    public function monthFeed($year, $month)
+    {
+        $posts = $this->postFetch()
+            ->where(['year' => $year, 'month' => $month])
+            ->orderBy('published', 'desc')
+            ->simplePaginate(20);
+        $author = config('splatter.owner');
+        return view('feeds.default', ['feed_name' => "Month of $year-$month", 'posts' => $posts, 'author' => $author]);
+    }
+
+    public function yearFeed($year)
+    {
+        $posts = $this->postFetch()
+            ->where(['year' => $year])
+            ->orderBy('published', 'desc')
+            ->simplePaginate(20);
+        $author = config('splatter.owner');
+        return view('feeds.default', ['feed_name' => "Year of $year", 'posts' => $posts, 'author' => $author]);
+    }
+
+
+    public function typeFeed($type)
+    {
+        $posts = $this->postFetch()
+            ->where(['type' => $type])
+            ->orderBy('published', 'desc')
+            ->simplePaginate(20);
+        $author = config('splatter.owner');
+        return view('feeds.default', ['feed_name' => "$type Feed", 'posts' => $posts, 'author' => $author]);
+    }
+
+    public function typeFeedRedir($type_i)
+    {
+        return redirect('/'.strtolower($type_i));
+    }
+
+    public function category($name)
+    {
+        $posts = $this->postFetch()
+            ->whereHas('categories', function($query) use ($name) {
+                $query->where('name',$name);
+            })
+            ->orderBy('published', 'desc')
+            ->simplePaginate(20);
+
+            
+        $author = config('splatter.owner');
+        return view('feeds.default', ['feed_name' => "$name", 'posts' => $posts, 'author' => $author]);        
+    }
+
+   
+    private function postFetch($include_deletes = true){
+
+        $owner = trim(config('splatter.owner.url'), '/');
+        if($include_deletes && IndieAuth::is_user($owner)){
+            $resut = Post::withoutGlobalScope(SoftDeletingScope::class)
+                ->where('draft', 0);
+        } else {
+           $result = Post::where('draft', 0);
+        }
+
+        $result = $result
+            ->with('media')
+            ->with('categories')
+            ->with('inReplyTo')
+            ->with('interactions');
+
+        return $result;
+            
+    }
+
+    private function sendJF2($posts, $author)
+    {
         $json = array();
         $json['type'] = 'feed';
         $json['url'] = config('app.url');
@@ -82,10 +155,9 @@ class FeedController extends Controller
         return response()->json($json);
     }
 
-    public function home_yaml()
+    private function sendYAML($posts, $author)
     {
-        $posts = Post::where('draft', 0)->with('media')
-            ->with('categories')
+        $posts = $this->postFetch(false)
             ->orderBy('published', 'desc')
             ->simplePaginate(20);
         $author = config('splatter.owner');
@@ -130,81 +202,6 @@ class FeedController extends Controller
         //TODO
         return response()->json($json)
             ->header('Content-Type', 'plain/yaml');
-    }
-
-    public function monthFeed($year, $month)
-    {
-        $posts = $this->basicSearch(['year' => $year, 'month' => $month]);      
-        $author = config('splatter.owner');
-        return view('feeds.default', ['feed_name' => "Month of $year-$month", 'posts' => $posts, 'author' => $author]);
-    }
-
-    public function yearFeed($year)
-    {
-        $posts = $this->basicSearch(['year' => $year]);      
-        $author = config('splatter.owner');
-        return view('feeds.default', ['feed_name' => "Year of $year", 'posts' => $posts, 'author' => $author]);
-    }
-
-
-    public function typeFeed($type)
-    {
-        $posts = $this->basicSearch(['type' => $type]);
-        $author = config('splatter.owner');
-        return view('feeds.default', ['feed_name' => "$type Feed", 'posts' => $posts, 'author' => $author]);
-    }
-
-    public function typeFeedRedir($type_i)
-    {
-        return redirect('/'.strtolower($type_i));
-    }
-
-    public function category($name)
-    {
-        $owner = trim(config('splatter.owner.url'), '/');
-        if(IndieAuth::is_user($owner)){
-            $posts = Post::withoutGlobalScope(SoftDeletingScope::class)
-                ->where('draft', 0)->with('media')
-                ->with('categories')
-                ->whereHas('categories', function($query) use ($name) {
-                    $query->where('name',$name);
-                })
-                ->orderBy('published', 'desc')
-                ->simplePaginate(20);
-        } else {
-            $posts = Post::where('draft', 0)->with('media')
-                ->with('categories')
-                ->whereHas('categories', function($query) use ($name) {
-                    $query->where('name',$name);
-                })
-                ->orderBy('published', 'desc')
-                ->simplePaginate(20);
-        }
-
-            
-        $author = config('splatter.owner');
-        return view('feeds.default', ['feed_name' => "$name Category", 'posts' => $posts, 'author' => $author]);        
-    }
-
-   
-    private function basicSearch($where_array = null){
-
-        $owner = trim(config('splatter.owner.url'), '/');
-        if(IndieAuth::is_user($owner)){
-            return Post::withoutGlobalScope(SoftDeletingScope::class)
-                ->where('draft', 0)-> with('media')
-                ->with('categories')
-                ->where($where_array)
-                ->orderBy('published', 'desc')
-                ->simplePaginate(20);
-        } else {
-            return Post::where('draft', 0)-> with('media')
-                ->with('categories')
-                ->where($where_array)
-                ->orderBy('published', 'desc')
-                ->simplePaginate(20);
-        }
-            
     }
 
 }

@@ -1,59 +1,52 @@
-<article id="post-{{$post->id}}" class="container-fluid postbox {{$post->type}} h-entry {{ $post->draft == 1 ? 'draft':'' }} {{$post->deleted_at ? 'deleted':''}} " >
+<article id="post-{{$post->id}}" class="container-fluid postbox {{$post->type}} h-entry {{ $post->draft == 1 ? 'draft':'' }} {{$post->type == 'snark' ? 'snark':''}} {{$post->deleted_at ? 'deleted':''}} " >
 
 
-  <header class="row">
-    <span class="col-lg-2 permalink">
-      <a class="u-url" href="{{$post->permalink}}" title="Permalink to <?php echo $post['name']?>" >
-        <i class="fa fa-link"></i> 
-      </a>
-    </span>
-
-    <span class="col-lg-2">      
-      <a class="u-url" href="{{$post->permalink}}" title="<?php echo date("g:i A", strtotime($post['published']))?>">
-        <time class="dt-published" datetime="<?php echo date("c", strtotime($post->published))?>" >
-          <?php echo date("F j, Y", strtotime($post->published))?>
-        </time>
-      </a>
-    </span>
-
-    @if(!$post->deleted_at)
-    <span class="col-lg-2">      
-      <a class="u-url" href="{{$post->shortlink}}">shortlink</a>
-    </span>
-    @endif
-
-    @if($post['in-reply-to'])
-      <span class="col-lg-2">      
-         In Reply To <a class="u-in-reply-to" href="<?php echo $post['in-reply-to']?>">This</a>
+  <header>
+    <div class="row">
+      <span class="col-lg-4">      
+        Posted on <a class="u-url" href="{{$post->permalink}}" title="<?php echo date("g:i A", strtotime($post['published']))?>">
+          <time class="dt-published" datetime="<?php echo date("c", strtotime($post->published))?>" >
+            <?php echo date("F j, Y", strtotime($post->published))?>
+          </time>
+        </a>
       </span>
+
+      <span class="col-lg-2">      
+        <a class="shortlink" href="{{$post->shortlink}}">shortlink</a>
+      </span>
+
+      <span class="col-lg-6">      
+        @if(!empty($post->inReplyTo->all()))
+          In Reply To 
+          @foreach($post->inReplyTo as $replyTo)
+            <a class="u-in-reply-to" href="{{$replyTo->url}}">{{str_limit($replyTo->url, 30, '...')}}</a>
+          @endforeach
+        @endif
+      </span>
+    </div>
+
+    @if($post->name && $post->type != 'listen')
+      <div class="row">
+        <span class="col-lg-12">
+          <h3 class="p-name">
+            <a class="u-url" href="{{$post->permalink}}" title="Permalink to <?php echo $post['name']?>" >
+              <?php echo $post['name']?>
+            </a>
+          </h3>
+        </span>
+      </div>
     @endif
-
-    <div class="col-lg-6">      
-      @if($post['type'] != 'listen')
-        <h1 class="p-name">
-          <a class="u-url" href="{{$post->permalink}}" title="Permalink to <?php echo $post['name']?>" >
-            <?php echo $post['name']?>
-          </a>
-        </h1>
-      @endif
-    </div>
-
-    <div class="col-lg-6">      
-      @if($post['type'] == 'snark')
-        <h3>Sarcasm Alert</h3>
-      @endif
-    </div>
 
   </header><!-- .entry-header -->
 
 
-  
+
   <div class="row {{$post['summary_html'] ? 'p-summary' : 'e-content'}}">
     @if($post->weight)
-     <h2 class="col-sm-12 h-measure p-weight">
-         Weight: <data class="p-num" value="{{$post->weight->num}}"> {{$post->weight->num}} </data>
-         <data class="p-unit" value="{{$post->weight->unit}}">{{$post->weight->unit}}</data>
-     </h2>
+     <h4 class="col-sm-12 h-measure p-weight">
+       Weight: <data class="p-num" value="{{$post->weight->num}}"> {{$post->weight->num}} </data>
+       <data class="p-unit" value="{{$post->weight->unit}}">{{$post->weight->unit}}</data>
+     </h4>
     @endif
 
     @if(isset($post['bookmark-of']) and !empty($post['bookmark-of']))
@@ -133,7 +126,7 @@
     @endif
 
   </div><!-- .entry-content -->
-  
+
 
   <footer class="row entry-meta">
     @if(isset($post['summary_html']))

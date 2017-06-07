@@ -50,6 +50,11 @@ class Post extends Model
         return $this->interactions()->where(['type' => 'repost'])->get();
     }
 
+    public function inReplyTo()
+    {
+        return $this->hasMany('App\ReplyTo');
+    }
+
     public function getReacjisAttribute()
     {
 
@@ -90,15 +95,16 @@ class Post extends Model
     }
 
     public function getShortlinkAttribute(){
-         $s = "";
-          $m = "0123456789ABCDEFGHJKLMNPQRSTUVWXYZ_abcdefghijkmnopqrstuvwxyz";
+        $s = "";
+        $m = "0123456789ABCDEFGHJKLMNPQRSTUVWXYZ_abcdefghijkmnopqrstuvwxyz";
         if ($this->id === null || $this->id === 0) {
             return 0;
         }
-        while ($this->id > 0) {
-               $d = $this->id % 60;
+        $id = $this->id;
+        while ($id > 0) {
+               $d = $id % 60;
                   $s = $m[$d] . $s;
-                  $this->id = ($this->id - $d) / 60;
+                  $id = ($id - $d) / 60;
         }
         return trim(config('splatter.site.short_url'), '/') . '/s/' .$s;
     }

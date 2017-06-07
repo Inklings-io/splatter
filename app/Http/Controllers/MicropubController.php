@@ -64,7 +64,18 @@ class MicropubController extends Controller
                 $json = array();
                 if(!empty($request->input('properties'))){
                     foreach($request->input('properties') as $requested_property){
-                        if(!empty($post[$requested_property])){$json[$requested_property] = $post[$requested_property];}
+                        if($requested_property == 'in-reply-to') {
+                            if(!empty($post->inReplyTo->all())){
+                                $json['in-reply-to'] = array();
+                                foreach($post->inReplyTo as $replyTo){
+                                    $json['in-reply-to'][] = $replyTo->url;
+                                }
+                            }
+                        } else {
+                            if(!empty($post[$requested_property])){
+                                $json[$requested_property] = $post[$requested_property];
+                            }
+                        }
                     }
 
                 } else {
@@ -72,14 +83,18 @@ class MicropubController extends Controller
                     if(!empty($post['summary'])){$json['summary'] = $post['summary'];}
                     if(!empty($post['name'])){$json['name'] = $post['name'];}
                     if(!empty($post['like-of'])){$json['like-of'] = $post['like-of'];}
-                    //TODO:
-                    //if(!empty($post['in-reply-to'])){$json['in-reply-to'] = $post['in-reply-to'];}
                     if(!empty($post['bookmark-of'])){$json['bookmark-of'] = $post['bookmark-of'];}
                     if(!empty($post['repost-of'])){$json['repost-of'] = $post['repost-of'];}
                     if(!empty($post['artist'])){$json['artist'] = $post['artist'];}
                     if(!empty($post['rsvp'])){$json['rsvp'] = $post['rsvp'];}
                     if(!empty($post['location'])){$json['location'] = $post['location'];}
                     if(!empty($post['weight'])){$json['weight'] = $post['weight'];}
+                    if(!empty($post->inReplyTo->all())){
+                        $json['in-reply-to'] = array();
+                        foreach($post->inReplyTo as $replyTo){
+                            $json['in-reply-to'][] = $replyTo->url;
+                        }
+                    }
                     //TODO event start/end
                 }
                 return response()->json($json);

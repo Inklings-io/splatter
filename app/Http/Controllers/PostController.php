@@ -27,6 +27,7 @@ class PostController extends Controller
     {
         //remove the soft delete scope to allow to return 410 gone on deleted items
         $post = Post::withoutGlobalScope(SoftDeletingScope::class)->with('media')
+            ->with('inReplyTo')
             ->with('interactions')
             ->where(['year' => $year, 'month' => $month, 'day' => $day, 'daycount' => $daycount])
             ->get()->first();

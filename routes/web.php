@@ -17,6 +17,7 @@
 
 Route::get('/','FeedController@home');
 Route::get('/jf2feed','FeedController@home_jf2');
+Route::get('/yamlfeed','FeedController@home_yaml');
 Route::get('category/{name}', 'FeedController@category');
 
 Route::get('s/{eid}','PostController@shortener');
