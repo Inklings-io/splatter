@@ -24,7 +24,7 @@ body {
     background-color: #f0f0f0;
 }
 
-.postfeed{
+.postfeed {
     position:relative;
     article {
         width:100%;
@@ -51,32 +51,12 @@ body {
         margin-top:10px;
     }
 }
-article.postbox {
-    width:100%;
-    img {
-        width:100%;
-    }
-    header {
-        img {
-            height:60px;
-            width:60px;
-        }
-    }
-    header > div {
-        font-size:10pt;
-        margin-bottom:10px;
-    }
-    footer {
-        margin:0;
-        margin-top:10px;
-    }
-}
-article.postbox.deleted:before {
+.postbox.deleted:before {
     content:'Deleted';
     color:darkred;
 }
 
-.postbox {
+.postbox, .context, .comment {
     border:1px solid black;
     box-shadow:0 1px 5px 0 rgba(0,0,0,0.2);
     margin:10px;
@@ -94,14 +74,30 @@ article.postbox.deleted:before {
     }
 
     //position:relative;
+    width:100%;
+    img {
+        width:100%;
+    }
+    header, .minicard {
+        img {
+            height:60px;
+            width:60px;
+        }
+    }
+    header > div {
+        font-size:10pt;
+        margin-bottom:10px;
+    }
+    footer {
+        margin:0;
+        margin-top:10px;
+    }
 }
 
-.comments .comment {
-    border:1px solid black;
-    box-shadow:0 1px 5px 0 rgba(0,0,0,0.2);
-    margin:10px;
-    padding: 20px;
-    background-color: white;
+.comment, .context {
+    background-color: #f9f9f9;
+    margin-left:25px;
+    width:96%;
 }
 
 .reacji-container, 
