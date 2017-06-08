@@ -53,7 +53,7 @@
 
 
 
-  <div class="row {{$post['summary_html'] ? 'p-summary' : 'e-content'}}">
+  <div class="row e-content">
     @if($post->weight)
      <h2 class="col-sm-12 h-measure p-weight">
        Weight: <data class="p-num" value="{{$post->weight->num}}"> {{$post->weight->num}} </data>
@@ -111,7 +111,7 @@
       </div>
     @endif
 
-    <div class="col-sm-12">
+    <div class="col-sm-12 {{($post->name ? '' : 'p-name')}}">
       {!!html_entity_decode($post->content)!!}
     </div>
 
