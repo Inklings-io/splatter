@@ -1,5 +1,5 @@
-@if(!empty($post->contexts) )
-  @include('posts.contexts', ['contexts' => $post->contexts])
+@if(!empty($context_history) )
+  @include('posts.contexts', ['contexts' => $context_history])
 @endif    
 
 

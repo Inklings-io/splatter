@@ -16,4 +16,13 @@ class Interaction extends Model
     {
         return $this->belongsTo('App\Person', 'person_id', 'id');
     }
+
+    public function interactions()
+    {
+        return $this->belongsToMany('App\Interaction', 'interaction_interaction', 'parent_id',  'child_id' );
+    }
+    public function getCommentsAttribute()
+    {
+        return $this->interactions()->where(['type' => 'reply'])->get();
+    }
 }

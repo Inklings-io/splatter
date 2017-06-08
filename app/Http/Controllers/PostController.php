@@ -29,11 +29,14 @@ class PostController extends Controller
         $post = Post::withoutGlobalScope(SoftDeletingScope::class)->with('media')
             ->with('inReplyTo')
             ->with('interactions')
+            ->with('contexts')
             ->where(['year' => $year, 'month' => $month, 'day' => $day, 'daycount' => $daycount])
             ->get()->first();
         if($post){
 
             $owner = trim(config('splatter.owner.url'), '/');
+
+            $context_history = $this->getContexts($post);
 
             if($post->deleted_at && !IndieAuth::is_user($owner)){
                 abort(410);
@@ -45,11 +48,25 @@ class PostController extends Controller
             }
 
             $author = config('splatter.owner');
-            return view('post', ['post' => $post, 'author' => $author]);
+            return view('post', ['post' => $post, 'author' => $author, 'context_history' => $context_history]);
         } else {
             abort(404);
         }
     
+    }
+
+    private function getContexts($obj){
+        if($obj->contexts){
+            $res = array();
+            foreach($obj->contexts as $ctx){
+                $res = array_merge($this->getContexts($ctx));
+                $res[] = $ctx;
+            }
+            return $res;
+        } else {
+            return array();
+        }
+
     }
 
 }

@@ -112,7 +112,17 @@ class MicropubController extends Controller
     }
     public function post_index()
     {
-            //$json['user'] = $request->attributes->get('user');
+
+        //$scopes = $request->attributes->get('scope');
+        //$user = $request->attributes->get('user');
+        $request = request();
+        if($request->isJson()){
+            $input_data = $request->json();
+        } else {
+            foreach($request->input() as $key = $value){
+                Log::debug($key . ' => ' $value);
+            }
+        }
 
     }
  

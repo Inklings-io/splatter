@@ -11,4 +11,9 @@ class Context extends Model
     {
         return $this->belongsTo('App\Person', 'person_id', 'id');
     }
+
+    public function contexts()
+    {
+        return $this->belongsToMany('App\Context', 'context_context', 'child_id',  'parent_id' );
+    }
 }
