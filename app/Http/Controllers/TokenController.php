@@ -9,18 +9,14 @@ use Illuminate\Http\Request;
 use Log;
 
 require_once base_path('vendor/indieauth/client/src/IndieAuth/Client.php');
-//
-//require_once DIR_BASE . 'libraries/php-mf2/Mf2/Parser.php';
-//require_once DIR_BASE . 'libraries/link-rel-parser-php/src/IndieWeb/link_rel_parser.php';
-//require_once DIR_BASE . 'libraries/indieauth-client-php/src/IndieAuth/Client.php';
 
 class TokenController extends Controller
 {
     public function index(Request $request)
     {
-        if (isset($request->input('code')) &&
-            isset($request->input('me')) &&
-            isset($request->input('redirect_uri'))) {
+        if ($request->input('code') &&
+            $request->input('me') &&
+            $request->input('redirect_uri')) {
             $post_data = http_build_query(array(
                 'code'          => $request->input('code'),
                 'me'            => $request->input('me'),
@@ -73,13 +69,9 @@ class TokenController extends Controller
                     'me' => $user)));
             } else {
                 abort(400);
-                //header('HTTP/1.1 400 Bad Request');
-                //exit();
             }
         } else {
             abort(400);
-            //header('HTTP/1.1 400 Bad Request');
-            //exit();
         }
     }
  

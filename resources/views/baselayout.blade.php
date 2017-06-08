@@ -10,11 +10,9 @@
     <link rel="profile" href="http://microformats.org/profile/hatom" />
 
     <link rel="authorization_endpoint" href="https://indieauth.com/auth">
-    <link rel="webmention" href="/api/webmentions">
-    <link rel="token_endpoint" href="/api/token">
-    <link rel="micropub" href="/api/micropub">
-
-    <link rel="authorization_endpoint" href="https://indieauth.com/auth">
+    <link rel="webmention" href="{{config('app.url')}}/api/webmentions">
+    <link rel="token_endpoint" href="{{config('app.url')}}/api/token">
+    <link rel="micropub" href="{{config('app.url')}}/api/micropub">
 
     @if(!empty($added_headers))
       @foreach($added_headers as $added_header)
