@@ -137,7 +137,7 @@ class MicropubController extends Controller
                     $post->slug = $input_data['slug'];
                     $modified = true;
                 } else {
-                    $post->slug = $input_data[''];
+                    $post->slug = '';
                 }
                 //TODO make this a function ?
                 //TODO add all the things
@@ -157,6 +157,8 @@ class MicropubController extends Controller
                     if($last_post){
                         $daycount = $last_post->daycount +1;
                     }
+
+                    $post->published = $time;
 
                     $post->year = $year;
                     $post->month = $month;
