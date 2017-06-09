@@ -20,7 +20,7 @@ class CheckToken
         if(empty($request->header('Authorization'))){
             abort(401);
         }
-        $parts = explode(' ', $request->header('Authorization'))[1];
+        $parts = explode(' ', $request->header('Authorization'));
         if(count($parts < 2)){
             abort(401);
         }

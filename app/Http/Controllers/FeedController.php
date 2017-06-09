@@ -201,7 +201,7 @@ class FeedController extends Controller
         }
         //TODO
         return response()->json($json)
-            ->header('Content-Type', 'plain/yaml');
+            ->header('Content-Type', 'text/x-yaml');
     }
 
 }
