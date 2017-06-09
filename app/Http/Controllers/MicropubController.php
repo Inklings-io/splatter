@@ -28,38 +28,16 @@ class MicropubController extends Controller
 
         } elseif($request->input('q') == 'source'){
             if(empty($request->input('url'))){
-                //$url = preg_replace('/^https?:\/\//', '', $request->input('url'));
-                //$app_domain_and_path = preg_replace( '/^https?:\/\//', '', config('app.url'));
                 
+                $post = $this->getPostFromUrl($request->input('url'));
 
-                //explode('/', config('app.url'))
-                try {
-                    $route = app('router')->getRoutes()->match(app('request')->create($url));
-                    $route_name = $route->getName();
-                } catch(Exception $e) {
-                    //TODO make a better specific response for this
+                if($post === null) {
                     return response()
                         ->view('special_errors.400_micropub')
                         ->setStatusCode(400);
+                } elseif(empty($post)){
+                    abort(404);
                 }
-
-                if($route_name != 'single_post' && $route_name != 'single_post_no_slug') {
-                    //TODO make a better specific response for this
-                    return response()
-                        ->view('special_errors.400_micropub')
-                        ->setStatusCode(400);
-                }
-
-                $year = $route->parameters['year'];
-                $month = $route->parameters['month'];
-                $day = $route->parameters['day'];
-                $daycount = $route->parameters['daycount'];
-
-                //NOTE: might want to remove the softdeletes scope so micropub clients
-                //      can find deleted posts to undelete?
-                $post = Post::with('media')
-                    ->where(['year' => $year, 'month' => $month, 'day' => $day, 'daycount' => $daycount])
-                    ->get()->first();
                 
                 $json = array();
                 if(!empty($request->input('properties'))){
@@ -119,17 +97,51 @@ class MicropubController extends Controller
         $request = request();
         if($request->isJson()){
             $input_data = $request->json();
+            //TODO
+            //
         } else {
             $input_data = $request->input();
             if(isset($input_data['action'])){
 
+                if($input_data['action'] == 'delete') {
+                    return deletePost($url);
+                } elseif($input_data['action'] == 'undelete') {
+                    return undeletePost($url);
+                } else {
+                    return response()
+                        ->view('special_errors.400_micropub')
+                        ->setStatusCode(400);
+                }
+
             } elseif(in_array('create', $scopes) && !empty($input_data)){
+                // if h=
                 $post = new Post;
                 $modified = false;
-                if(isset($input_data('content'))){
-                    $post->content = $value;
+                if(isset($input_data['content'])){
+                    $post->content = $input_data['content'];
                     $modified = true;
                 }
+                if(isset($input_data['summary'])){
+                    $post->summary = $input_data['summary'];
+                    $modified = true;
+                }
+                if(isset($input_data['name'])){
+                    $post->name = $input_data['name'];
+                    $modified = true;
+                }
+                if(isset($input_data['like-of'])){
+                    $post['like-of'] = $input_data['like-of'];
+                    $modified = true;
+                }
+                if(isset($input_data['slug'])){
+                    $post->slug = $input_data['slug'];
+                    $modified = true;
+                } else {
+                    $post->slug = $input_data[''];
+                }
+                //TODO make this a function ?
+                //TODO add all the things
+
                 if($modified){
 
                     $time = Carbon::now();
@@ -155,8 +167,10 @@ class MicropubController extends Controller
                     $post->type = 'note';
                     $post->save();
 
+                    //TODO add categories and in-reply-tos after saving
+
                     return response('Created', 201)
-                        ->header('Location',$post->permalink);
+                        ->header('Location', config('app.url') . $post->permalink);
                 } else {
                     abort(400);
                 }
@@ -165,6 +179,85 @@ class MicropubController extends Controller
 
     }
  
+
+    /* returns a Post object if a post is found at the specified url,
+     * if not, if there is something wrong with the url it returns false 
+     * if no post was found at the url, it returns []
+     *
+     * input: url string,  the url to look up
+     * input: with_trashed bool, returns deleted posts or not
+     */
+    private function getPostFromUrl($url, $with_trashed = false){
+        try {
+            $route = app('router')->getRoutes()->match(app('request')->create($url));
+            $route_name = $route->getName();
+        } catch(Exception $e) {
+            return false;
+        }
+
+        if($route_name != 'single_post' && $route_name != 'single_post_no_slug') {
+            return false;
+        }
+
+        $year = $route->parameters['year'];
+        $month = $route->parameters['month'];
+        $day = $route->parameters['day'];
+        $daycount = $route->parameters['daycount'];
+
+        if($with_trashed){
+            $post = Post::withTrashed()
+                ->where(['year' => $year, 'month' => $month, 'day' => $day, 'daycount' => $daycount])
+                ->get()->first();
+        } else {
+            $post = Post::where(['year' => $year, 'month' => $month, 'day' => $day, 'daycount' => $daycount])
+                ->get()->first();
+        }
+
+        return $post;
+
+    }
+
+    private function deleteEntry($url){
+        if(!empty($url)){
+            return response()
+                ->view('special_errors.400_micropub')
+                ->setStatusCode(400);
+        }
+
+        $post = $this->getPostFromUrl($url);
+
+        if($post === null) {
+            return response()
+                ->view('special_errors.400_micropub')
+                ->setStatusCode(400);
+        } elseif(empty($post)){
+            abort(404);
+        }
+
+        $post->delete();
+        return response()->json(array('result' => 'post deleted'));
+    }
+
+    private function undeleteEntry($url){
+        if(!empty($url)){
+            return response()
+                ->view('special_errors.400_micropub')
+                ->setStatusCode(400);
+        }
+
+        $post = $this->getPostFromUrl($url, true);
+
+        if($post === null) {
+            return response()
+                ->view('special_errors.400_micropub')
+                ->setStatusCode(400);
+        } elseif(empty($post)){
+            abort(404);
+        }
+
+        $post->restore();
+        return response()->json(array('result' => 'post restored'));
+    }
 
 
 

@@ -6,7 +6,7 @@ use DB;
 use App\Post;
 use App\Category;
 use Illuminate\Http\Request;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
+#use Illuminate\Database\Eloquent\SoftDeletingScope;
 use IndieAuth;
 use Log;
     
@@ -16,7 +16,8 @@ class PostController extends Controller
     public function shortener($eid){
         $post_id = Post::unshorten($eid);
 
-        $post = Post::withoutGlobalScope(SoftDeletingScope::class)->find($post_id);
+        $post = Post::withTrashed()
+            ->find($post_id);
         if($post == null){
             abort(404);
         }
@@ -26,7 +27,8 @@ class PostController extends Controller
     public function view($type, $year, $month, $day, $daycount, $slug = '')
     {
         //remove the soft delete scope to allow to return 410 gone on deleted items
-        $post = Post::withoutGlobalScope(SoftDeletingScope::class)->with('media')
+        $post = Post::withTrashed()
+            ->with('media')
             ->with('inReplyTo')
             ->with('interactions')
             ->with('contexts')
