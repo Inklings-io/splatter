@@ -1,9 +1,4 @@
 <?php
-//TODO:!!!! send out webmention for main feed to pubsub_hub if defined
-require_once DIR_BASE . 'libraries/php-mf2/Mf2/Parser.php';
-require_once DIR_BASE . 'libraries/link-rel-parser-php/src/IndieWeb/link_rel_parser.php';
-require_once DIR_BASE . 'libraries/indieauth-client-php/src/IndieAuth/Client.php';
-
 class ControllerMicropubReceive extends Controller {
     public function index()
     {
@@ -21,27 +16,7 @@ class ControllerMicropubReceive extends Controller {
         } else {
             $headers = apache_request_headers();
             //check that we were even offered an access token
-            if (!isset($this->request->post['access_token'])
-                && (!isset($_SERVER['REDIRECT_HTTP_AUTHORIZATION']) || empty($_SERVER['REDIRECT_HTTP_AUTHORIZATION']))
-                && !isset($headers['Authorization'])) {
-                //$this->log->write('err0');
-                header('HTTP/1.1 401 Unauthorized');
-                exit();
-            } else {
-                $token = $this->request->post['access_token'];
-                if (!$token) {
-                    $parts = explode(' ', $_SERVER['REDIRECT_HTTP_AUTHORIZATION']);
-                    $token = $parts[1];
-                }
-                if (!$token) {
-                    $parts = explode(' ', $headers['Authorization']);
-                    $token = $parts[1];
-                }
-
-                $this->load->model('auth/token');
-                $auth_info = $this->model_auth_token->getAuthFromToken(urldecode($token));
-
-                $scopes = explode(' ', $auth_info['scope']);
+            if (isset($this->request->post['access_token'])
 
                 $has_post_access = false;
                 $has_edit_access = false;

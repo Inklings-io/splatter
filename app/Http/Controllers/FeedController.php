@@ -159,7 +159,7 @@ class FeedController extends Controller
     {
         $posts = $this->postFetch(false)
             ->orderBy('published', 'desc')
-            ->simplePaginate(20);
+            ->simplePaginate(10);
         $author = config('splatter.owner');
 
         $json = array();
@@ -172,7 +172,7 @@ class FeedController extends Controller
         $json['author']['photo'] = $author['image'];
         $json['author']['name'] = $author['name'];
 
-        $json['children'] = array();
+        $json['items'] = array();
         foreach($posts as $post){
             $entry = array(
                 'content' => $post->content,
@@ -196,11 +196,11 @@ class FeedController extends Controller
                 $entry['category'] = $categories;
             }
             
-            $json['children'][] = $entry;
+            $json['items'][] = $entry;
 
         }
         //TODO
-        return response()->json($json)
+        return response(yaml_emit($json))
             ->header('Content-Type', 'text/x-yaml');
     }
 

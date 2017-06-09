@@ -96,87 +96,46 @@ class MicropubController extends Controller
         //$user = $request->attributes->get('user');
         $request = request();
         if($request->isJson()){
-            $input_data = $request->json();
-            //TODO
-            //
+            $data = $request->json();
         } else {
-            $input_data = $request->input();
+            $input_data = $request->except(['access_token']);
             if(isset($input_data['action'])){
-
-                if($input_data['action'] == 'delete') {
-                    return $this->deleteEntry($request->input('url'));
-                } elseif($input_data['action'] == 'undelete') {
-                    return $this->undeleteEntry($request->input('url'));
+                $data = $input_data;
+            } else {
+                if(isset($input_data['h'])){
+                    $data['type'] = array('h-' . $input_data['h']);
                 } else {
-                    return response()
-                        ->view('special_errors.400_micropub')
-                        ->setStatusCode(400);
+                    $data['type'] = array('h-entry');
                 }
+                $data['properties'] = array();
+                foreach ($input_data as $key => $input_entry){
+                    if(is_array($input_entry)){
+                        $data['properties'][$key] = $input_entry;
+                    } else {
+                        $data['properties'][$key] = array($input_entry);
 
-            } elseif(in_array('create', $scopes) && !empty($input_data)){
-                // if h=
-                $post = new Post;
-                $modified = false;
-                if(isset($input_data['content'])){
-                    $post->content = $input_data['content'];
-                    $modified = true;
-                }
-                if(isset($input_data['summary'])){
-                    $post->summary = $input_data['summary'];
-                    $modified = true;
-                }
-                if(isset($input_data['name'])){
-                    $post->name = $input_data['name'];
-                    $modified = true;
-                }
-                if(isset($input_data['like-of'])){
-                    $post['like-of'] = $input_data['like-of'];
-                    $modified = true;
-                }
-                if(isset($input_data['slug'])){
-                    $post->slug = $input_data['slug'];
-                    $modified = true;
-                } else {
-                    $post->slug = '';
-                }
-                //TODO make this a function ?
-                //TODO add all the things
-
-                if($modified){
-
-                    $time = Carbon::now();
-                    $year = $time->year;
-                    $month = $time->month;
-                    $day = $time->day;
-
-                    $last_post = Post::where(['year' => $year, 'month' => $month, 'day' => $day])
-                        ->orderBy('daycount', 'desc')
-                        ->get()
-                        ->first();
-                    $daycount = 1;
-                    if($last_post){
-                        $daycount = $last_post->daycount +1;
                     }
 
-                    $post->published = $time;
-
-                    $post->year = $year;
-                    $post->month = $month;
-                    $post->day = $day;
-                    $post->daycount = $daycount;
-
-                    $post->slug = '';
-                    $post->type = 'note';
-                    $post->save();
-
-                    //TODO add categories and in-reply-tos after saving
-
-                    return response('Created', 201)
-                        ->header('Location', config('app.url') . $post->permalink);
-                } else {
-                    abort(400);
                 }
             }
+
+        }
+
+        if(isset($data['action'])){
+
+            if($data['action'] == 'delete') {
+                return $this->deleteEntry($request->input('url'));
+            } elseif($data['action'] == 'undelete') {
+                return $this->undeleteEntry($request->input('url'));
+            } else {
+                //TODO: update
+                return response()
+                    ->view('special_errors.400_micropub')
+                    ->setStatusCode(400);
+            }
+        } elseif(!empty($data)){
+            return $this->createPost($data);
+
         }
 
     }
@@ -219,14 +178,89 @@ class MicropubController extends Controller
 
     }
 
+    private function createPost($data){
+        if(!in_array('create', $scopes)){
+            abort('401');
+        } 
+        $input_data = $post['properties'];
+
+        // todo if h=
+        $post = new Post;
+        $modified = false;
+        if(isset($input_data['content']) && !empty($input_data['content'])){
+            $post->content = $input_data['content'][0];
+            $modified = true;
+        }
+        if(isset($input_data['summary']) && !empty($input_data['summary'])){
+            $post->summary = $input_data['summary'][0];
+            $modified = true;
+        }
+        if(isset($input_data['name']) && !empty($input_data['name'])){
+            $post->name = $input_data['name'][0];
+            $modified = true;
+        }
+        if(isset($input_data['like-of']) && !empty($input_data['like-of'])){
+            $post['like-of'] = $input_data['like-of'][0];
+            $modified = true;
+        }
+        if(isset($input_data['slug']) && !empty($input_data['slug'])){
+            $post->slug = $input_data['slug'][0];
+            $modified = true;
+        } else {
+            $post->slug = '';
+        }
+        //TODO make this a function ?
+        //TODO add all the things
+
+        if($modified){
+
+            $time = Carbon::now();
+            $year = $time->year;
+            $month = $time->month;
+            $day = $time->day;
+
+            $last_post = Post::where(['year' => $year, 'month' => $month, 'day' => $day])
+                ->orderBy('daycount', 'desc')
+                ->get()
+                ->first();
+            $daycount = 1;
+            if($last_post){
+                $daycount = $last_post->daycount +1;
+            }
+
+            $post->published = $time;
+
+            $post->year = $year;
+            $post->month = $month;
+            $post->day = $day;
+            $post->daycount = $daycount;
+
+            $post->slug = '';
+            $post->type = 'note';
+            $post->save();
+
+            //TODO add categories and in-reply-tos after saving
+
+            return response('Created', 201)
+                ->header('Location', config('app.url') . $post->permalink);
+        } else {
+            abort(400);
+        }
+    }
+
+
     private function deleteEntry($url){
+        if(!in_array('delete', $scopes)){
+            abort(401);
+        }
+        
         if(empty($url)){
             return response()
                 ->view('special_errors.400_micropub')
                 ->setStatusCode(400);
         }
 
-        $post = $this->getPostFromUrl($url);
+        $post = $this->getPostFromUrl($url, true); //don't really care if someone tries to delete an already deleted item
 
         if($post === null) {
             return response()
@@ -236,11 +270,23 @@ class MicropubController extends Controller
             abort(404);
         }
 
-        $post->delete();
-        return response()->json(array('result' => 'post deleted'));
+        if(!$post->trashed()){
+            $post->delete();
+            return response()->json(array('result' => 'post deleted'));
+        } else {
+            return response()->json(array('result' => 'post was already deleted'));
+        }
     }
 
     private function undeleteEntry($url){
+
+        $request = request();
+        $scopes = $request->attributes->get('scope');
+
+        if(!in_array('undelete', $scopes)){
+            abort(401);
+        }
+
         if(empty($url)){
             return response()
                 ->view('special_errors.400_micropub')
@@ -257,8 +303,12 @@ class MicropubController extends Controller
             abort(404);
         }
 
-        $post->restore();
-        return response()->json(array('result' => 'post restored'));
+        if($post->trashed()){
+            $post->restore();
+            return response()->json(array('result' => 'post restored'));
+        } else {
+            return response()->json(array('result' => 'post was not deleted'));
+        }
     }
 
 

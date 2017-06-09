@@ -17,14 +17,21 @@ class CheckToken
      */
     public function handle($request, Closure $next)
     {
-        if(empty($request->header('Authorization'))){
+        if(!empty($request->header('Authorization'))){
+            $parts = explode(' ', $request->header('Authorization'));
+            if(count($parts < 2)){
+                abort(401);
+            }
+            $token_code = $parts[1];
+
+        } elseif($request->input('access_token') && !empty($request->input('access_token'))){
+            $token_code = $request->input('access_token');
+
+        } else {
             abort(401);
         }
-        $parts = explode(' ', $request->header('Authorization'));
-        if(count($parts < 2)){
-            abort(401);
-        }
-        $token_parts = explode(',', $parts[1]);
+
+        $token_parts = explode(',', $token_code);
         $token_obj = Token::find($token_parts[0]);
 
         if(empty($token_obj) || $token_obj->checksum != $token_parts[1]){
