@@ -104,9 +104,9 @@ class MicropubController extends Controller
             if(isset($input_data['action'])){
 
                 if($input_data['action'] == 'delete') {
-                    return $this->deleteEntry($url);
+                    return $this->deleteEntry($request->input('url'));
                 } elseif($input_data['action'] == 'undelete') {
-                    return $this->undeleteEntry($url);
+                    return $this->undeleteEntry($request->input('url'));
                 } else {
                     return response()
                         ->view('special_errors.400_micropub')

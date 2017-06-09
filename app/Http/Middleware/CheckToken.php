@@ -20,8 +20,11 @@ class CheckToken
         if(empty($request->header('Authorization'))){
             abort(401);
         }
-        $tok_string = explode(' ', $request->header('Authorization'))[1];
-        $token_parts = explode(',', $tok_string);
+        $parts = explode(' ', $request->header('Authorization'))[1];
+        if(count($parts < 2)){
+            abort(401);
+        }
+        $token_parts = explode(',', $parts[1]);
         $token_obj = Token::find($token_parts[0]);
 
         if(empty($token_obj) || $token_obj->checksum != $token_parts[1]){
