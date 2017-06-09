@@ -112,6 +112,7 @@ class MicropubController extends Controller
     }
     public function post_index()
     {
+        $request = request();
 
         $scopes = $request->attributes->get('scope');
         //$user = $request->attributes->get('user');
@@ -119,23 +120,39 @@ class MicropubController extends Controller
         if($request->isJson()){
             $input_data = $request->json();
         } else {
-            $input_data = $requext->input();
-            if($input_data['action']){
+            $input_data = $request->input();
+            if(isset($input_data['action'])){
 
             } elseif(in_array('create', $scopes) && !empty($input_data)){
-                $post = new Token;
+                $post = new Post;
                 $modified = false;
-                foreach($request->input() as $key => $value){
-                    switch($key){
-                    case 'content':
-                        $post->content = $value;
-                        $modified = true;
-                        break;
-                    default:
-                        break;
-                    }
+                if(isset($input_data('content'))){
+                    $post->content = $value;
+                    $modified = true;
                 }
                 if($modified){
+
+                    $time = Carbon::now();
+                    $year = $time->year;
+                    $month = $time->month;
+                    $day = $time->day;
+
+                    $last_post = Post::where(['year' => $year, 'month' => $month, 'day' => $day])
+                        ->orderBy('daycount', 'desc')
+                        ->get()
+                        ->first();
+                    $daycount = 1;
+                    if($last_post){
+                        $daycount = $last_post->daycount +1;
+                    }
+
+                    $post->year = $year;
+                    $post->month = $month;
+                    $post->day = $day;
+                    $post->daycount = $daycount;
+
+                    $post->slug = '';
+                    $post->type = 'note';
                     $post->save();
 
                     return response('Created', 201)
