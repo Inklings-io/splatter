@@ -220,7 +220,7 @@ class MicropubController extends Controller
     }
 
     private function deleteEntry($url){
-        if(!empty($url)){
+        if(empty($url)){
             return response()
                 ->view('special_errors.400_micropub')
                 ->setStatusCode(400);
@@ -241,7 +241,7 @@ class MicropubController extends Controller
     }
 
     private function undeleteEntry($url){
-        if(!empty($url)){
+        if(empty($url)){
             return response()
                 ->view('special_errors.400_micropub')
                 ->setStatusCode(400);
