@@ -113,14 +113,36 @@ class MicropubController extends Controller
     public function post_index()
     {
 
-        //$scopes = $request->attributes->get('scope');
+        $scopes = $request->attributes->get('scope');
         //$user = $request->attributes->get('user');
         $request = request();
         if($request->isJson()){
             $input_data = $request->json();
         } else {
-            foreach($request->input() as $key = $value){
-                Log::debug($key . ' => ' $value);
+            $input_data = $requext->input();
+            if($input_data['action']){
+
+            } elseif(in_array('create', $scopes) && !empty($input_data)){
+                $post = new Token;
+                $modified = false;
+                foreach($request->input() as $key => $value){
+                    switch($key){
+                    case 'content':
+                        $post->content = $value;
+                        $modified = true;
+                        break;
+                    default:
+                        break;
+                    }
+                }
+                if($modified){
+                    $post->save();
+
+                    return response('Created', 201)
+                        ->header('Location',$post->permalink);
+                } else {
+                    abort(400);
+                }
             }
         }
 

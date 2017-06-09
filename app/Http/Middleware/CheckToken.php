@@ -37,6 +37,10 @@ class CheckToken
         $token_obj->last_used = Carbon::now();
         $token_obj->save();
 
+        if($token_obj->user != config('splatter.owner.url')){
+            abort(401);
+        }
+
         $request->attributes->add([
             'scope' => explode(' ', $token_obj->scope),
             'client_id' => $token_obj->client_id,
