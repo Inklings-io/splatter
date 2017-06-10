@@ -202,47 +202,6 @@ class ControllerMicropubReceive extends Controller {
 
     }
 
-    private function undeletePost($post_data)
-    {
-        //$this->log->write('called undeletePost()');
-        $post = $this->getPostByURL($post_data['url']);
-        if ($post) {
-            $this->load->model('blog/post');
-            $this->model_blog_post->undeletePost($post['id']);
-            $this->cache->delete('post.' . $post['id']);
-            $this->cache->delete('posts.' . $post['id']);
-
-            $this->response->addHeader('HTTP/1.1 200 OK');
-            //$this->response->addHeader('Location: '. $post['permalink']);
-            $this->response->setOutput($post['permalink']);
-        }
-    }
-
-    private function deletePost($post_data)
-    {
-        $this->log->write('called deletePost() ' . $post_data['url']);
-        $post = $this->getPostByURL($post_data['url']);
-        if ($post) {
-            $this->log->write('found post');
-            $this->load->model('blog/post');
-            $this->model_blog_post->deletePost($post['id']);
-
-            $this->cache->delete('post.' . $post['id']);
-
-            $this->load->model('webmention/send_queue');
-            if (defined('QUEUED_SEND')) {
-                $this->model_webmention_send_queue->addEntry($post['id']);
-            } else {
-                $this->load->controller('webmention/queue/sendWebmention', $post['id']);
-            }
-
-            $this->response->addHeader('HTTP/1.1 200 OK');
-            //$this->response->addHeader('Location: '. $post['permalink']);
-            $this->response->setOutput($post['permalink']);
-
-
-        }
-    }
 
     private function updatePost($post_data)
     {
@@ -474,23 +433,6 @@ class ControllerMicropubReceive extends Controller {
         } else {
             $data['content'] = '';
         }
-        if (isset($post_data['published'])) {
-            $data['published'] = $post_data['published'];
-        }
-        if (isset($post_data['slug'])) {
-            $data['slug'] = $post_data['slug'];
-        } else {
-            $data['slug'] = '';
-        }
-        if (isset($post_data['draft'])) {
-            $data['draft'] = $post_data['draft'];
-        }
-        if (isset($post_data['like-of'])) {
-            $data['like-of'] = $post_data['like-of'];
-        }
-        if (isset($post_data['bookmark-of'])) {
-            $data['bookmark-of'] = $post_data['bookmark-of'];
-        }
         if (isset($post_data['in-reply-to'])) {
             $data['in-reply-to'] = $post_data['in-reply-to'];
             $this->load->model('webmention/vouch');
@@ -502,28 +444,10 @@ class ControllerMicropubReceive extends Controller {
             $this->load->model('webmention/vouch');
             $this->model_webmention_vouch->addWhitelistEntry($data['in-reply-to']);
         }
-        if (isset($post_data['name'])) {
-            $data['name'] = $post_data['name'];
-        }
-        if (isset($post_data['description'])) {
-            $data['description'] = $post_data['description'];
-        }
-        if (isset($post_data['weight'])) {
-            $data['weight'] = $post_data['weight'];
-        }
-        if (isset($post_data['location'])) {
-            $data['location'] = $post_data['location'];
-        }
         if (isset($post_data['weight'])) {
 
             $data['weight_value'] = $post_data['weight']['value'];
             $data['weight_unit'] = $post_data['weight']['unit'];
-        }
-        if (isset($post_data['weight_value'])) {
-            $data['weight_value'] = $post_data['weight_value'];
-        }
-        if (isset($post_data['weight_unit'])) {
-            $data['weight_unit'] = $post_data['weight_unit'];
         }
         //deprecated
         if (isset($post_data['place_name'])) {
@@ -545,9 +469,6 @@ class ControllerMicropubReceive extends Controller {
             }
         }
 
-        if ($client_id) {
-            $data['created_by'] = $client_id;
-        }
 
         $post_id = $this->model_blog_post->newPost($type, $data);
 

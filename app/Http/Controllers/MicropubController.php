@@ -5,6 +5,9 @@ use DB;
 use App\Http\Controllers\Controller;
 use Carbon\Carbon;
 use App\Post;
+use App\Category;
+use App\Media;
+use App\ReplyTo;
 use Log;
 
 class MicropubController extends Controller
@@ -43,9 +46,9 @@ class MicropubController extends Controller
                 if(!empty($request->input('properties'))){
                     foreach($request->input('properties') as $requested_property){
                         if($requested_property == 'in-reply-to') {
-                            if(!empty($post->inReplyTo->all())){
+                            if(!empty($post->inReplyTos->all())){
                                 $json['in-reply-to'] = array();
-                                foreach($post->inReplyTo as $replyTo){
+                                foreach($post->inReplyTos as $replyTo){
                                     $json['in-reply-to'][] = $replyTo->url;
                                 }
                             }
@@ -67,9 +70,9 @@ class MicropubController extends Controller
                     if(!empty($post['rsvp'])){$json['rsvp'] = $post['rsvp'];}
                     if(!empty($post['location'])){$json['location'] = $post['location'];}
                     if(!empty($post['weight'])){$json['weight'] = $post['weight'];}
-                    if(!empty($post->inReplyTo->all())){
+                    if(!empty($post->inReplyTos->all())){
                         $json['in-reply-to'] = array();
-                        foreach($post->inReplyTo as $replyTo){
+                        foreach($post->inReplyTos as $replyTo){
                             $json['in-reply-to'][] = $replyTo->url;
                         }
                     }
@@ -92,11 +95,10 @@ class MicropubController extends Controller
     {
         $request = request();
 
-        $scopes = $request->attributes->get('scope');
         //$user = $request->attributes->get('user');
         $request = request();
         if($request->isJson()){
-            $data = $request->json();
+            $data = $request->input();
         } else {
             $input_data = $request->except(['access_token']);
             if(isset($input_data['action'])){
@@ -125,10 +127,14 @@ class MicropubController extends Controller
 
             if($data['action'] == 'delete') {
                 return $this->deleteEntry($request->input('url'));
+
             } elseif($data['action'] == 'undelete') {
                 return $this->undeleteEntry($request->input('url'));
+
+            } elseif($data['action'] == 'update') {
+                return $this->updateEntry($request->input());
+
             } else {
-                //TODO: update
                 return response()
                     ->view('special_errors.400_micropub')
                     ->setStatusCode(400);
@@ -179,77 +185,163 @@ class MicropubController extends Controller
     }
 
     private function createPost($data){
+        $request = request();
+        $scopes = $request->attributes->get('scope');
         if(!in_array('create', $scopes)){
             abort('401');
         } 
-        $input_data = $post['properties'];
+        $input_data = $data['properties'];
 
-        // todo if h=
+        // todo if h=entry
         $post = new Post;
-        $modified = false;
+
+        $basic_fields = array('summary', 'draft', 'name', 'like-of', 'bookmark-of', 'description', 'height', 'location', 'weight_value', 'weight_unit', 'artist' );
+        //TODO in-reply-to, tag-of, weight, rsvp
+        //TODO content might be a special case for HTML content
+        foreach($basic_fields as $field_name){
+            if(isset($input_data[$field_name]) && !empty($input_data[$field_name])){
+                $post[$field_name] = $input_data[$field_name][0];
+            }
+        }
+
         if(isset($input_data['content']) && !empty($input_data['content'])){
-            $post->content = $input_data['content'][0];
-            $modified = true;
+            if(is_array($input_data['content'][0])){
+                $post->content = $input_data['content'][0]['html'];
+                $post['content-format'] = 'html';
+            } else {
+                $post->content = $input_data['content'][0];
+            }
         }
-        if(isset($input_data['summary']) && !empty($input_data['summary'])){
-            $post->summary = $input_data['summary'][0];
-            $modified = true;
-        }
-        if(isset($input_data['name']) && !empty($input_data['name'])){
-            $post->name = $input_data['name'][0];
-            $modified = true;
-        }
-        if(isset($input_data['like-of']) && !empty($input_data['like-of'])){
-            $post['like-of'] = $input_data['like-of'][0];
-            $modified = true;
-        }
+
         if(isset($input_data['slug']) && !empty($input_data['slug'])){
             $post->slug = $input_data['slug'][0];
             $modified = true;
         } else {
             $post->slug = '';
         }
-        //TODO make this a function ?
-        //TODO add all the things
 
-        if($modified){
+        $time = Carbon::now();
+        $year = $time->year;
+        $month = $time->month;
+        $day = $time->day;
 
-            $time = Carbon::now();
-            $year = $time->year;
-            $month = $time->month;
-            $day = $time->day;
-
-            $last_post = Post::where(['year' => $year, 'month' => $month, 'day' => $day])
-                ->orderBy('daycount', 'desc')
-                ->get()
-                ->first();
-            $daycount = 1;
-            if($last_post){
-                $daycount = $last_post->daycount +1;
-            }
-
-            $post->published = $time;
-
-            $post->year = $year;
-            $post->month = $month;
-            $post->day = $day;
-            $post->daycount = $daycount;
-
-            $post->slug = '';
-            $post->type = 'note';
-            $post->save();
-
-            //TODO add categories and in-reply-tos after saving
-
-            return response('Created', 201)
-                ->header('Location', config('app.url') . $post->permalink);
-        } else {
-            abort(400);
+        $last_post = Post::withTrashed()
+            ->where(['year' => $year, 'month' => $month, 'day' => $day])
+            ->orderBy('daycount', 'desc')
+            ->get()
+            ->first();
+        $daycount = 1;
+        if($last_post){
+            $daycount = $last_post->daycount +1;
         }
+
+        $post->year = $year;
+        $post->month = $month;
+        $post->day = $day;
+        $post->daycount = $daycount;
+
+        if(isset($input_data['published']) && !empty($input_data['published'])){
+            $post->published = $input_data['published'][0];
+        } else {
+            $post->published = $time;
+        }
+
+        $post->created_by = $request->attributes->get('client_id');
+
+        if(isset($input_data['mp-type']) && !empty($input_data['mp-type'])){
+            $post->type = $input_data['mp-type'][0];
+        } else {
+            //Post Type Discovery Algorithm
+            if(isset($input_data['rsvp']) && isset($input_data['rsvp'][0]) && in_array($input_data['rsvp'][0], array('yes', 'no', 'maybe','interested'))){
+                $post->type = 'rsvp';
+
+            } elseif(isset($input_data['tag-of']) && isset($input_data['tag-of'][0]) && !empty($input_data['tag-of'][0])) {  //should check this is a valid url
+                $post->type = 'tag';
+
+            } elseif(isset($input_data['bookmark-of']) && isset($input_data['bookmark-of'][0]) && !empty($input_data['bookmark-of'][0])) {  //should check this is a valid url
+                $post->type = 'bookmark';
+
+            } elseif(isset($input_data['in-reply-to']) && isset($input_data['in-reply-to'][0]) && !empty($input_data['in-reply-to'][0])) {  //should check this is a valid url
+                $post->type = 'reply';
+
+            } elseif(isset($input_data['repost-of']) && isset($input_data['repost-of'][0]) && !empty($input_data['repost-of'][0])) {  //should check this is a valid url
+                $post->type = 'repost';
+
+            } elseif(isset($input_data['like-of']) && isset($input_data['like-of'][0]) && !empty($input_data['like-of'][0])) {  //should check this is a valid url
+                $post->type = 'like';
+
+            } elseif(isset($input_data['photo']) && isset($input_data['photo'][0]) && !empty($input_data['photo'][0])) {
+                $post->type = 'photo';
+
+            } elseif(isset($input_data['video']) && isset($input_data['video'][0]) && !empty($input_data['video'][0])) {
+                $post->type = 'video';
+
+            } elseif(isset($input_data['audio']) && isset($input_data['audio'][0]) && !empty($input_data['audio'][0])) {
+                $post->type = 'audio';
+
+            } elseif(isset($input_data['location']) && isset($input_data['location'][0]) && !empty($input_data['location'][0]) && !isset($input_data['content'])) { //TODO will have to review this at some point
+                $post->type = 'checkin';
+
+            } else {
+                $post->type = 'note';
+                //I don't do other types such as article, those will need to be specifically set by mp-type
+
+            }
+            
+            // end Post Type Discovery
+        }
+
+        $post->save();
+
+        //Add categories to post
+        if(isset($input_data['category']) && !empty($input_data['category'])){
+            foreach($input_data['category'] as $category_name){
+                $category = Category::firstOrCreate(['name' => $category_name]);
+                $post->categories()->save($category);
+            }
+        } 
+
+        //Add in-reply-to values to post
+        if(isset($input_data['in-reply-to']) && !empty($input_data['in-reply-to'])){
+            foreach($input_data['in-reply-to'] as $reply_url){
+
+                $reply_to = new ReplyTo;
+                $reply_to->url = $reply_url;
+                $post->inReplyTos()->save($reply_to);
+            }
+        } 
+
+        //Add media items to post
+        $media_fields = array('photo', 'video', 'audio');
+        foreach($media_fields as $field_name){
+            if(isset($input_data[$field_name]) && !empty($input_data[$field_name])){
+                foreach($input_data[$field_name] as $media_obj_or_str){
+                    $media = new Media;
+                    $media->type = $field_name;
+                    if(is_array($media_obj_or_str)){
+                        if(isset($media_obj_or_str['value'])){
+                            $media->path = $media_obj_or_str['value'];
+                        }
+                        if(isset($media_obj_or_str['alt'])){
+                            $media->alt = $media_obj_or_str['alt'];
+                        }
+                    } else {
+                        $media->path = $media_obj_or_str;
+                    }
+                    $media->save();
+                    $post->media()->save($media);
+                }
+            } 
+        } 
+
+        return response('Created', 201)
+            ->header('Location', config('app.url') . $post->permalink);
     }
 
 
     private function deleteEntry($url){
+        $request = request();
+        $scopes = $request->attributes->get('scope');
         if(!in_array('delete', $scopes)){
             abort(401);
         }
@@ -278,7 +370,8 @@ class MicropubController extends Controller
         }
     }
 
-    private function undeleteEntry($url){
+    private function undeleteEntry($url)
+    {
 
         $request = request();
         $scopes = $request->attributes->get('scope');
@@ -312,6 +405,131 @@ class MicropubController extends Controller
     }
 
 
+    private function updateEntry($mp_data)
+    {
+        $request = request();
+        $scopes = $request->attributes->get('scope');
+
+        if(!in_array('update', $scopes)){
+            abort(401);
+        }
+
+        $post = $this->getPostFromUrl($mp_data['url']);
+
+        if($post === null) {
+            return response()
+                ->view('special_errors.400_micropub')
+                ->setStatusCode(400);
+        } elseif(empty($post)){
+            abort(404);
+        }
+
+        $basic_fields = array('summary', 'content', 'draft', 'name', 'like-of', 'bookmark-of', 'description', 'height', 'location', 'weight_value', 'weight_unit', 'artist' );
+        $media_fields = array('photo', 'video', 'audio');
+
+        // 'add'
+        if(isset($mp_data['add'])){
+            foreach($mp_data['add'] as $key => $attrs){
+                if(in_array($key, $basic_fields)){
+                    if($post[$key] === null && isset($attrs[0])){
+                        $post[$key] = $attrs[0];
+                    }
+                } elseif($key == 'category') {
+                    foreach($attrs as $category_name){
+                        $category = Category::firstOrCreate(['name' => $category_name]);
+                        $post->categories()->save($category);
+                    }
+
+                } elseif(in_array($key, $media_fields)){
+                    foreach($mp_data[$key] as $media_obj_or_str){
+                        $media = new Media;
+                        $media->type = $key;
+                        if(is_array($media_obj_or_str)){
+                            if(isset($media_obj_or_str['value'])){
+                                $media->path = $media_obj_or_str['value'];
+                            }
+                            if(isset($media_obj_or_str['alt'])){
+                                $media->alt = $media_obj_or_str['alt'];
+                            }
+                        } else {
+                            $media->path = $media_obj_or_str;
+                        }
+                        $media->save();
+                        $post->media()->save($media);
+                    }
+                } 
+            }
+        }
+        if(isset($mp_data['delete'])){
+            if($this->isHash($mp_data['delete'])){
+                foreach($mp_data['delete'] as $key => $attrs){
+                    foreach($attrs as $category_name){
+                        $category = Category::where(['name' => $category_name])->get()->first();
+                        $post->categories()->detatch($category->id);
+                    }
+                }
+            } else {
+                foreach($mp_data['delete'] as $key){
+                    if(in_array($key, $basic_fields)){
+                        $post[$key] = null;
+
+                    } elseif($key == 'category'){
+                        $post->categories()->detatch();
+
+                    } elseif(in_array($key, $media_fields)){
+                        $post->media()->where(['type' => $key])->detatch();
+                    }
+                }
+            }
+        }
+        //TODO 'replace'
+        if(isset($mp_data['replace'])){
+            foreach($mp_data['replace'] as $key => $attrs){
+
+                if(in_array($key, $basic_fields)){
+                    if($post[$key] === null && isset($attrs[0])){
+                        $post[$key] = $attrs[0];
+                    }
+                } elseif($key == 'category') {
+                    foreach($attrs as $category_name){
+                        $post->categories()->detatch();
+                        $category = Category::firstOrCreate(['name' => $category_name]);
+                        $post->categories()->save($category);
+                    }
+
+                } elseif(in_array($key, $media_fields)){
+                    $post->media()->where(['type' => $key])->detatch();
+
+                    foreach($mp_data[$key] as $media_obj_or_str){
+                        $media = new Media;
+                        $media->type = $key;
+                        if(is_array($media_obj_or_str)){
+                            if(isset($media_obj_or_str['value'])){
+                                $media->path = $media_obj_or_str['value'];
+                            }
+                            if(isset($media_obj_or_str['alt'])){
+                                $media->alt = $media_obj_or_str['alt'];
+                            }
+                        } else {
+                            $media->path = $media_obj_or_str;
+                        }
+                        $media->save();
+                        $post->media()->save($media);
+                    }
+                } 
+
+
+            }
+        }
+
+        $post->save();
+
+    }
+
+    private function isHash(array $in)
+    {
+        return is_array($in) && count(array_filter(array_keys($in), 'is_string')) > 0;
+    }
 
 
 }

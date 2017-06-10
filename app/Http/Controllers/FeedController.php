@@ -105,7 +105,7 @@ class FeedController extends Controller
         $result = $result
             ->with('media')
             ->with('categories')
-            ->with('inReplyTo')
+            ->with('inReplyTos')
             ->with('interactions');
 
         return $result;

@@ -29,7 +29,7 @@ class PostController extends Controller
         //remove the soft delete scope to allow to return 410 gone on deleted items
         $post = Post::withTrashed()
             ->with('media')
-            ->with('inReplyTo')
+            ->with('inReplyTos')
             ->with('interactions')
             ->with('contexts')
             ->where(['year' => $year, 'month' => $month, 'day' => $day, 'daycount' => $daycount])

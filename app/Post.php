@@ -50,7 +50,7 @@ class Post extends Model
         return $this->interactions()->where(['type' => 'repost'])->get();
     }
 
-    public function inReplyTo()
+    public function inReplyTos()
     {
         return $this->hasMany('App\ReplyTo');
     }

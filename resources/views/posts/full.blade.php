@@ -28,9 +28,9 @@
       </span>
 
       <span class="col-lg-6">      
-        @if(!empty($post->inReplyTo->all()))
+        @if(!empty($post->inReplyTos->all()))
           In Reply To 
-          @foreach($post->inReplyTo as $replyTo)
+          @foreach($post->inReplyTos as $replyTo)
             <a class="u-in-reply-to" href="{{$replyTo->url}}">{{str_limit($replyTo->url, 30, '...')}}</a>
           @endforeach
         @endif

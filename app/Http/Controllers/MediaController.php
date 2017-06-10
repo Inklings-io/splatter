@@ -11,11 +11,7 @@ class MediaController extends Controller
     {
         $request = request();
 
-        if(!$request->attributes->get('user') == 'TODO' ){ //TODO
-            abort(401);
-        }
-
-        if(!in_array('create', $request->attributes->get('scope')) {
+        if(!in_array('create', $request->attributes->get('scope'))) {
             abort(401);
         }
 
@@ -29,11 +25,13 @@ class MediaController extends Controller
             abort(400);
         }
 
-        $path = $file->store('uploads');
+        $path = $file->store('public');
 
-        //TODO does path need to be modified?
+        $path = preg_replace('/^/?public\//', '/storage/', $path);
 
-        return response($path)
+        $path = asset($path);
+
+        return response($path, 201)
             ->header('Location', $path);
     }
 

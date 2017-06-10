@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use Closure;
 use App\Token;
 use Carbon\Carbon;
+use Log;
 
 class CheckToken
 {
@@ -19,7 +20,7 @@ class CheckToken
     {
         if(!empty($request->header('Authorization'))){
             $parts = explode(' ', $request->header('Authorization'));
-            if(count($parts < 2)){
+            if(count($parts) < 2){
                 abort(401);
             }
             $token_code = $parts[1];
@@ -28,6 +29,7 @@ class CheckToken
             $token_code = $request->input('access_token');
 
         } else {
+                Log::debug('2');
             abort(401);
         }
 
@@ -35,12 +37,14 @@ class CheckToken
         $token_obj = Token::find($token_parts[0]);
 
         if(empty($token_obj) || $token_obj->checksum != $token_parts[1]){
+                Log::debug('2');
             abort(401);
         }
         $last_used = strtotime($token_obj->last_used);
 
         //if older than 30 days
         if($last_used < (time() - 60*60*24*30)){
+                Log::debug('3');
             abort(401);
         }
 
@@ -48,6 +52,7 @@ class CheckToken
         $token_obj->save();
 
         if($token_obj->user != config('splatter.owner.url')){
+                Log::debug('4');
             abort(401);
         }
 
