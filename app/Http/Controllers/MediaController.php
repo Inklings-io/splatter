@@ -27,8 +27,8 @@ class MediaController extends Controller
 
         $path = $file->store('public');
 
-        $path = preg_replace('/^/public/', '/storage/', $path);
-        $path = preg_replace('/^public/', 'storage/', $path);
+        $path = preg_replace('/^\/public\//', '/storage/', $path);
+        $path = preg_replace('/^public\//', 'storage/', $path);
 
         $path = asset($path);
 
