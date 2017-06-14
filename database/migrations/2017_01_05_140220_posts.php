@@ -49,6 +49,7 @@ class Posts extends Migration
             $table->timestamp('event_end')->nullable(); 
             $table->string('location')->nullable(); //stored as JSON
             $table->string('weight')->nullable(); //stored as JSON
+            $table->longtext('unknown')->nullable();
 
             // timestamps
             $table->timestamps();

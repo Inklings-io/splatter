@@ -3,6 +3,7 @@ namespace App\Http\Controllers;
 
 use DB;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Storage;
 use Carbon\Carbon;
 use App\Post;
 use App\Category;
@@ -13,7 +14,7 @@ use Log;
 class MicropubController extends Controller
 {
     protected $media_fields = array('photo', 'video', 'audio');
-	protected $basic_fields = array('summary', 'content', 'draft', 'name', 'like-of', 'bookmark-of', 'description', 'height', 'location', 'weight_value', 'weight_unit', 'artist' );
+    protected $basic_fields = array('summary', 'content', 'draft', 'name', 'like-of', 'bookmark-of', 'description', 'height', 'location', 'weight_value', 'weight_unit', 'artist' );
     
     public function get_index()
     {
@@ -46,6 +47,9 @@ class MicropubController extends Controller
                 }
                 
 		$json = array('properties' => array());
+		if(isset($post->unknown)){
+		    $json['properties'] = json_decode($post->unknown);
+		}
                 if(!empty($request->input('properties'))){
                     foreach($request->input('properties') as $requested_property){
                         if($requested_property == 'in-reply-to') {
@@ -134,7 +138,15 @@ class MicropubController extends Controller
                 }
                 foreach($this->media_fields as $media_field){
                     if($request->hasFile($media_field)){
-                        $data['properties'][$media_field] = $this->uploadFile($request->file($media_field));
+			$file_or_files = $request->file($media_field);
+			if(is_array($file_or_files)){
+			    $data['properties'][$media_field] = array();
+			    foreach($file_or_files as $single_file){
+			        $data['properties'][$media_field][] = $this->uploadFile($single_file);
+			    }
+			} else {
+			    $data['properties'][$media_field] = array($this->uploadFile($file_or_files));
+			}
                     }
                 }
             }
@@ -211,65 +223,12 @@ class MicropubController extends Controller
         $input_data = $data['properties'];
 
         // todo if h=entry
+        unset($input_data['h']);
         $post = new Post;
-
-        //TODO in-reply-to, tag-of, weight, rsvp
-        foreach($this->basic_fields as $field_name){
-            // content is a special case for HTML content
-            // tod remove from basic fields?
-            if($field_name != 'content'){
-                if(isset($input_data[$field_name]) && !empty($input_data[$field_name])){
-                    $post[$field_name] = $input_data[$field_name][0];
-                }
-            }
-        }
-
-        if(isset($input_data['content']) && !empty($input_data['content'])){
-            if(is_array($input_data['content'][0])){
-                $post->content = $input_data['content'][0]['html'];
-                $post['content-format'] = 'html';
-            } else {
-                $post->content = $input_data['content'][0];
-            }
-        }
-
-        if(isset($input_data['slug']) && !empty($input_data['slug'])){
-            $post->slug = $input_data['slug'][0];
-            $modified = true;
-        } else {
-            $post->slug = '';
-        }
-
-        $time = Carbon::now();
-        $year = $time->year;
-        $month = $time->month;
-        $day = $time->day;
-
-        $last_post = Post::withTrashed()
-            ->where(['year' => $year, 'month' => $month, 'day' => $day])
-            ->orderBy('daycount', 'desc')
-            ->get()
-            ->first();
-        $daycount = 1;
-        if($last_post){
-            $daycount = $last_post->daycount +1;
-        }
-
-        $post->year = $year;
-        $post->month = $month;
-        $post->day = $day;
-        $post->daycount = $daycount;
-
-        if(isset($input_data['published']) && !empty($input_data['published'])){
-            $post->published = $input_data['published'][0];
-        } else {
-            $post->published = $time;
-        }
-
-        $post->created_by = $request->attributes->get('client_id');
 
         if(isset($input_data['mp-type']) && !empty($input_data['mp-type'])){
             $post->type = $input_data['mp-type'][0];
+            unset($input_data['mp-type']);
         } else {
             //Post Type Discovery Algorithm
             if(isset($input_data['rsvp']) && isset($input_data['rsvp'][0]) && in_array($input_data['rsvp'][0], array('yes', 'no', 'maybe','interested'))){
@@ -307,9 +266,73 @@ class MicropubController extends Controller
                 //I don't do other types such as article, those will need to be specifically set by mp-type
 
             }
+
+        //TODO tag-of, weight, rsvp
+        foreach($this->basic_fields as $field_name){
+            // content is a special case for HTML content
+            // tod remove from basic fields?
+            if($field_name != 'content'){
+                if(isset($input_data[$field_name]) && !empty($input_data[$field_name])){
+                    $post[$field_name] = $input_data[$field_name][0];
+		    unset($input_data[$field_name]);
+                }
+            }
+        }
+
+        if(isset($input_data['content']) && !empty($input_data['content'])){
+            if(is_array($input_data['content'][0])){
+                $post->content = $input_data['content'][0]['html'];
+                $post['content-format'] = 'html';
+            } else {
+                $post->content = $input_data['content'][0];
+            }
+	    unset($input_data['content']);
+        }
+
+        if(isset($input_data['slug'])){
+	    if(!empty($input_data['slug'])){
+                $post->slug = $input_data['slug'][0];
+                $modified = true;
+	    }
+            unset($input_data['slug']);
+        } else {
+            $post->slug = '';
+        }
+
+        $time = Carbon::now();
+        $year = $time->year;
+        $month = $time->month;
+        $day = $time->day;
+
+        $last_post = Post::withTrashed()
+            ->where(['year' => $year, 'month' => $month, 'day' => $day])
+            ->orderBy('daycount', 'desc')
+            ->get()
+            ->first();
+        $daycount = 1;
+        if($last_post){
+            $daycount = $last_post->daycount +1;
+        }
+
+        $post->year = $year;
+        $post->month = $month;
+        $post->day = $day;
+        $post->daycount = $daycount;
+
+        if(isset($input_data['published']) && !empty($input_data['published'])){
+            $post->published = $input_data['published'][0];
+            unset($input_data['published']);
+        } else {
+            $post->published = $time;
+        }
+
+        $post->created_by = $request->attributes->get('client_id');
+
             
             // end Post Type Discovery
         }
+
+	
 
         $post->save();
 
@@ -319,6 +342,7 @@ class MicropubController extends Controller
                 $category = Category::firstOrCreate(['name' => $category_name]);
                 $post->categories()->save($category);
             }
+            unset($input_data['category']);
         } 
 
         //Add in-reply-to values to post
@@ -329,6 +353,7 @@ class MicropubController extends Controller
                 $reply_to->url = $reply_url;
                 $post->inReplyTos()->save($reply_to);
             }
+            unset($input_data['in-reply-to']);
         } 
 
         //Add media items to post
@@ -351,7 +376,14 @@ class MicropubController extends Controller
                     $post->media()->save($media);
                 }
             } 
+            unset($input_data[$field_name]);
         } 
+
+	if(!empty($input_data)){
+	    $unknown = json_encode($input_data);
+	    $post->unknown = $unknown;
+	    $post->save();
+	}
 
         return response('Created', 201)
             ->header('Location', config('app.url') . $post->permalink);
