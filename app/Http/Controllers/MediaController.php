@@ -17,12 +17,14 @@ class MediaController extends Controller
         }
 
         if(!$request->hasFile('file')){
+	    Log::debug('file not found in media endpoint request');
             abort(400);
         }
 
         $file = $request->file('file');
 
         if(!$file->isValid()){
+	    Log::debug('file failed to upload to media endpoint');
             abort(400);
         }
 
@@ -34,6 +36,8 @@ class MediaController extends Controller
 
         //$path = asset($path);
         $path = Storage::url($path);
+
+	$path = asset($path);
 
         return response($path, 201)
             ->header('Location', $path);

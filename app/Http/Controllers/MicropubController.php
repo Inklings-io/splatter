@@ -30,7 +30,7 @@ class MicropubController extends Controller
             return response()->json($json);
 
         } elseif($request->input('q') == 'source'){
-            if(empty($request->input('url'))){
+            if(!empty($request->input('url'))){
                 
                 $post = $this->getPostFromUrl($request->input('url'));
 
@@ -42,38 +42,50 @@ class MicropubController extends Controller
                     abort(404);
                 }
                 
-                $json = array();
+		$json = array('properties' => array());
                 if(!empty($request->input('properties'))){
                     foreach($request->input('properties') as $requested_property){
                         if($requested_property == 'in-reply-to') {
                             if(!empty($post->inReplyTos->all())){
-                                $json['in-reply-to'] = array();
+                                $json['properties']['in-reply-to'] = array();
                                 foreach($post->inReplyTos as $replyTo){
-                                    $json['in-reply-to'][] = $replyTo->url;
+                                    $json['properties']['in-reply-to'][] = $replyTo->url;
+                                }
+                            }
+                        } elseif($requested_property == 'category') {
+                            if(!empty($post->categories->all())){
+                                $json['properties']['category'] = array();
+                                foreach($post->categories as $category){
+                                    $json['properties']['category'][] = $category->name;
                                 }
                             }
                         } else {
                             if(!empty($post[$requested_property])){
-                                $json[$requested_property] = $post[$requested_property];
+                                $json['properties'][$requested_property] = arraY($post[$requested_property]);
                             }
                         }
                     }
 
                 } else {
-                    if(!empty($post['content'])){$json['content'] = $post['content'];}
-                    if(!empty($post['summary'])){$json['summary'] = $post['summary'];}
-                    if(!empty($post['name'])){$json['name'] = $post['name'];}
-                    if(!empty($post['like-of'])){$json['like-of'] = $post['like-of'];}
-                    if(!empty($post['bookmark-of'])){$json['bookmark-of'] = $post['bookmark-of'];}
-                    if(!empty($post['repost-of'])){$json['repost-of'] = $post['repost-of'];}
-                    if(!empty($post['artist'])){$json['artist'] = $post['artist'];}
-                    if(!empty($post['rsvp'])){$json['rsvp'] = $post['rsvp'];}
-                    if(!empty($post['location'])){$json['location'] = $post['location'];}
-                    if(!empty($post['weight'])){$json['weight'] = $post['weight'];}
+		    $json['type'] = array('h-entry');
+		    $basic_fields = array('summary', 'content', 'draft', 'name', 'like-of', 'bookmark-of', 'description', 'height', 'location', 'weight_value', 'weight_unit', 'artist' );
+                    //$media_fields = array('photo', 'video', 'audio');
+		 
+		    foreach($basic_fields as $field_name){
+		        if(!empty($post[$field_name])){
+			    $json['properties'][$field_name] = array($post[$field_name]);
+		        }
+                    }
                     if(!empty($post->inReplyTos->all())){
-                        $json['in-reply-to'] = array();
+                        $json['properties']['in-reply-to'] = array();
                         foreach($post->inReplyTos as $replyTo){
-                            $json['in-reply-to'][] = $replyTo->url;
+                            $json['properties']['in-reply-to'][] = $replyTo->url;
+                        }
+                    }
+                    if(!empty($post->categories->all())){
+                        $json['properties']['category'] = array();
+                        foreach($post->categories as $category){
+                            $json['properties']['category'][] = $category->name;
                         }
                     }
                     //TODO event start/end
@@ -429,6 +441,11 @@ class MicropubController extends Controller
 
         // 'add'
         if(isset($mp_data['add'])){
+	    if(!is_array($mp_data['add'])){
+	        return response()
+		    ->view('special_errors.400_micropub')
+		    ->setStatusCode(400);
+	    }
             foreach($mp_data['add'] as $key => $attrs){
                 if(in_array($key, $basic_fields)){
                     if($post[$key] === null && isset($attrs[0])){
@@ -461,11 +478,16 @@ class MicropubController extends Controller
             }
         }
         if(isset($mp_data['delete'])){
+	    if(!is_array($mp_data['delete'])){
+	        return response()
+		    ->view('special_errors.400_micropub')
+		    ->setStatusCode(400);
+	    }
             if($this->isHash($mp_data['delete'])){
                 foreach($mp_data['delete'] as $key => $attrs){
                     foreach($attrs as $category_name){
                         $category = Category::where(['name' => $category_name])->get()->first();
-                        $post->categories()->detatch($category->id);
+                        $post->categories()->detach($category->id);
                     }
                 }
             } else {
@@ -474,31 +496,36 @@ class MicropubController extends Controller
                         $post[$key] = null;
 
                     } elseif($key == 'category'){
-                        $post->categories()->detatch();
+                        $post->categories()->detach();
 
                     } elseif(in_array($key, $media_fields)){
-                        $post->media()->where(['type' => $key])->detatch();
+                        $post->media()->where(['type' => $key])->detach();
                     }
                 }
             }
         }
         //TODO 'replace'
         if(isset($mp_data['replace'])){
+	    if(!is_array($mp_data['replace'])){
+	        return response()
+		    ->view('special_errors.400_micropub')
+		    ->setStatusCode(400);
+	    }
             foreach($mp_data['replace'] as $key => $attrs){
 
                 if(in_array($key, $basic_fields)){
-                    if($post[$key] === null && isset($attrs[0])){
+                    if(isset($attrs[0])){
                         $post[$key] = $attrs[0];
                     }
                 } elseif($key == 'category') {
                     foreach($attrs as $category_name){
-                        $post->categories()->detatch();
+                        $post->categories()->detach();
                         $category = Category::firstOrCreate(['name' => $category_name]);
                         $post->categories()->save($category);
                     }
 
                 } elseif(in_array($key, $media_fields)){
-                    $post->media()->where(['type' => $key])->detatch();
+                    $post->media()->where(['type' => $key])->detach();
 
                     foreach($mp_data[$key] as $media_obj_or_str){
                         $media = new Media;
