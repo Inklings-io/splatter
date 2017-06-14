@@ -12,6 +12,9 @@ use Log;
 
 class MicropubController extends Controller
 {
+    protected $media_fields = array('photo', 'video', 'audio');
+	protected $basic_fields = array('summary', 'content', 'draft', 'name', 'like-of', 'bookmark-of', 'description', 'height', 'location', 'weight_value', 'weight_unit', 'artist' );
+    
     public function get_index()
     {
         $request = request();
@@ -68,10 +71,8 @@ class MicropubController extends Controller
 
                 } else {
 		    $json['type'] = array('h-entry');
-		    $basic_fields = array('summary', 'content', 'draft', 'name', 'like-of', 'bookmark-of', 'description', 'height', 'location', 'weight_value', 'weight_unit', 'artist' );
-                    //$media_fields = array('photo', 'video', 'audio');
 		 
-		    foreach($basic_fields as $field_name){
+		    foreach($this->basic_fields as $field_name){
 		        if(!empty($post[$field_name])){
 			    $json['properties'][$field_name] = array($post[$field_name]);
 		        }
@@ -130,6 +131,11 @@ class MicropubController extends Controller
 
                     }
 
+                }
+                foreach($this->media_fields as $media_field){
+                    if($request->hasFile($media_field)){
+                        $data['properties'][$media_field] = $this->uploadFile($request->file($media_field));
+                    }
                 }
             }
 
@@ -207,12 +213,14 @@ class MicropubController extends Controller
         // todo if h=entry
         $post = new Post;
 
-        $basic_fields = array('summary', 'draft', 'name', 'like-of', 'bookmark-of', 'description', 'height', 'location', 'weight_value', 'weight_unit', 'artist' );
         //TODO in-reply-to, tag-of, weight, rsvp
-        //TODO content might be a special case for HTML content
-        foreach($basic_fields as $field_name){
-            if(isset($input_data[$field_name]) && !empty($input_data[$field_name])){
-                $post[$field_name] = $input_data[$field_name][0];
+        foreach($this->basic_fields as $field_name){
+            // content is a special case for HTML content
+            // tod remove from basic fields?
+            if($field_name != 'content'){
+                if(isset($input_data[$field_name]) && !empty($input_data[$field_name])){
+                    $post[$field_name] = $input_data[$field_name][0];
+                }
             }
         }
 
@@ -324,8 +332,7 @@ class MicropubController extends Controller
         } 
 
         //Add media items to post
-        $media_fields = array('photo', 'video', 'audio');
-        foreach($media_fields as $field_name){
+        foreach($this->media_fields as $field_name){
             if(isset($input_data[$field_name]) && !empty($input_data[$field_name])){
                 foreach($input_data[$field_name] as $media_obj_or_str){
                     $media = new Media;
@@ -436,9 +443,6 @@ class MicropubController extends Controller
             abort(404);
         }
 
-        $basic_fields = array('summary', 'content', 'draft', 'name', 'like-of', 'bookmark-of', 'description', 'height', 'location', 'weight_value', 'weight_unit', 'artist' );
-        $media_fields = array('photo', 'video', 'audio');
-
         // 'add'
         if(isset($mp_data['add'])){
 	    if(!is_array($mp_data['add'])){
@@ -447,7 +451,7 @@ class MicropubController extends Controller
 		    ->setStatusCode(400);
 	    }
             foreach($mp_data['add'] as $key => $attrs){
-                if(in_array($key, $basic_fields)){
+                if(in_array($key, $this->basic_fields)){
                     if($post[$key] === null && isset($attrs[0])){
                         $post[$key] = $attrs[0];
                     }
@@ -457,7 +461,7 @@ class MicropubController extends Controller
                         $post->categories()->save($category);
                     }
 
-                } elseif(in_array($key, $media_fields)){
+                } elseif(in_array($key, $this->media_fields)){
                     foreach($mp_data[$key] as $media_obj_or_str){
                         $media = new Media;
                         $media->type = $key;
@@ -492,13 +496,13 @@ class MicropubController extends Controller
                 }
             } else {
                 foreach($mp_data['delete'] as $key){
-                    if(in_array($key, $basic_fields)){
+                    if(in_array($key, $this->basic_fields)){
                         $post[$key] = null;
 
                     } elseif($key == 'category'){
                         $post->categories()->detach();
 
-                    } elseif(in_array($key, $media_fields)){
+                    } elseif(in_array($key, $this->media_fields)){
                         $post->media()->where(['type' => $key])->detach();
                     }
                 }
@@ -513,7 +517,7 @@ class MicropubController extends Controller
 	    }
             foreach($mp_data['replace'] as $key => $attrs){
 
-                if(in_array($key, $basic_fields)){
+                if(in_array($key, $this->basic_fields)){
                     if(isset($attrs[0])){
                         $post[$key] = $attrs[0];
                     }
@@ -524,7 +528,7 @@ class MicropubController extends Controller
                         $post->categories()->save($category);
                     }
 
-                } elseif(in_array($key, $media_fields)){
+                } elseif(in_array($key, $this->media_fields)){
                     $post->media()->where(['type' => $key])->detach();
 
                     foreach($mp_data[$key] as $media_obj_or_str){
@@ -565,6 +569,27 @@ class MicropubController extends Controller
     private function isHash(array $in)
     {
         return is_array($in) && count(array_filter(array_keys($in), 'is_string')) > 0;
+    }
+
+    private function uploadFile($file){
+        $request = request();
+        $scopes = $request->attributes->get('scope');
+
+        if(!in_array('create', $scopes)){
+            abort(401);
+        }
+
+        if(!$file->isValid()){
+            abort(400);
+        }
+
+        $path = Storage::putFile('public', $file, 'public');
+        
+        $path = Storage::url($path);
+
+        return $path;
+
+        
     }
 
 
