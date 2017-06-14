@@ -96,7 +96,7 @@ class FeedController extends Controller
 
         $owner = trim(config('splatter.owner.url'), '/');
         if($include_deletes && IndieAuth::is_user($owner)){
-            $resut = Post::withoutGlobalScope(SoftDeletingScope::class)
+            $result = Post::withoutGlobalScope(SoftDeletingScope::class)
                 ->where('draft', 0);
         } else {
            $result = Post::where('draft', 0);
