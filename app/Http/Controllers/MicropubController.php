@@ -526,6 +526,15 @@ class MicropubController extends Controller
 
     }
 
+    private function queueWebmentionSending($post){
+        $ms = new MentionSend;
+        $ms->post_id = $post->id;
+        $ms->save();
+        $job = new SendWebmentions($ms);
+        dispatch($job);
+
+    }
+
     private function isHash(array $in)
     {
         return is_array($in) && count(array_filter(array_keys($in), 'is_string')) > 0;

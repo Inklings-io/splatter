@@ -3,6 +3,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Log;
 
 class MediaController extends Controller
@@ -25,11 +26,14 @@ class MediaController extends Controller
             abort(400);
         }
 
-        $path = $file->store('public');
+        $path = Storage::putFile('public', $file, 'public');
+        
+        //$path = $file->store('public');
 
-        $path = preg_replace('/^public/', 'storage/', $path);
+        //$path = preg_replace('/^public/', 'storage/', $path);
 
-        $path = asset($path);
+        //$path = asset($path);
+        $path = Storage::url($path);
 
         return response($path, 201)
             ->header('Location', $path);
