@@ -3,6 +3,7 @@ namespace App\Http\Controllers;
 
 use DB;
 use App\Webmention;
+use App\Jobs\ProcessWebmention;
 use App\Http\Controllers\Controller;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -44,7 +45,8 @@ class WebmentionController extends Controller
         //  or if I am not using vouches, and i have a valid source, and target, i just auto accept
         if ($this->isApprovedSource($source) || !config('splatter.webmention.use_vouch')) {
 
-            $webmention->status = 202;
+            $webmention->status = 'queued';
+            $webmention->status_code = 202;
             $webmention->save();
             //TODO include vouch url if set anyway??
             
@@ -57,7 +59,8 @@ class WebmentionController extends Controller
         // if we are using vouch, and there is not vouch, or its invalid,  respond retry with 449
         //  still save webmention in case i want to approve manually later
 
-            $webmention->status = 449;
+            $webmention->status = 'queued';
+            $webmention->status_code = 449;
             $webmention->save();
 
             return response('Retry With vouch')
@@ -65,7 +68,8 @@ class WebmentionController extends Controller
 
         } elseif ($this->isApprovedSource($vouch)) {
             $webmention->vouch = $vouch;
-            $webmention->status = 202;
+            $webmention->status = 'queued';
+            $webmention->status_code = 202;
             $webmention->save();
 
             $job = new ProcessWebmention($webmention);
@@ -77,7 +81,8 @@ class WebmentionController extends Controller
         } else {
 
             $webmention->vouch = $vouch;
-            $webmention->status = 449;
+            $webmention->status = 'queued';
+            $webmention->status_code = 449;
             $webmention->save();
 
 
@@ -103,7 +108,7 @@ class WebmentionController extends Controller
     private function isApprovedSource($url)
     {
         //TODO
-        return false;
+        return true;
     }
 
 

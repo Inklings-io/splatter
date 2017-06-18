@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class Interaction extends Model
 {
+    use SoftDeletes;
+
     // potentially a comment could be in-reply-to multiple posts remember
     public function posts()
     {

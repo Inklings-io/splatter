@@ -10,7 +10,7 @@
     <link rel="profile" href="http://microformats.org/profile/hatom" />
 
     <link rel="authorization_endpoint" href="https://indieauth.com/auth">
-    <link rel="webmention" href="{{config('app.url')}}/api/webmentions">
+    <link rel="webmention" href="{{config('app.url')}}/api/webmention">
     <link rel="token_endpoint" href="{{config('app.url')}}/api/token">
     <link rel="micropub" href="{{config('app.url')}}/api/micropub">
 
