@@ -25,4 +25,9 @@ class Interaction extends Model
     {
         return $this->interactions()->where(['type' => 'reply'])->get();
     }
+
+    public function webmention()
+    {
+        return $this->belongsTo('App\Webmention');
+    }
 }

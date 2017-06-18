@@ -8,5 +8,9 @@ use DB;
 
 class Webmention extends Model
 {
+    public function interactions()
+    {
+        return $this->hasMany('App\Interaction');
+    }
 
 }

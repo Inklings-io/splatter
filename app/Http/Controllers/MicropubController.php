@@ -379,11 +379,13 @@ class MicropubController extends Controller
             unset($input_data[$field_name]);
         } 
 
-	if(!empty($input_data)){
-	    $unknown = json_encode($input_data);
-	    $post->unknown = $unknown;
-	    $post->save();
-	}
+        if(!empty($input_data)){
+            $unknown = json_encode($input_data);
+            $post->unknown = $unknown;
+            $post->save();
+        }
+    
+        $this->queueWebmentionSending($post);
 
         return response('Created', 201)
             ->header('Location', config('app.url') . $post->permalink);
@@ -415,6 +417,7 @@ class MicropubController extends Controller
 
         if(!$post->trashed()){
             $post->delete();
+            $this->queueWebmentionSending($post);
             return response()->json(array('result' => 'post deleted'));
         } else {
             return response()->json(array('result' => 'post was already deleted'));
@@ -449,6 +452,7 @@ class MicropubController extends Controller
 
         if($post->trashed()){
             $post->restore();
+            $this->queueWebmentionSending($post);
             return response()->json(array('result' => 'post restored'));
         } else {
             return response()->json(array('result' => 'post was not deleted'));
@@ -586,15 +590,7 @@ class MicropubController extends Controller
         }
 
         $post->save();
-
-    }
-
-    private function queueWebmentionSending($post){
-        $ms = new MentionSend;
-        $ms->post_id = $post->id;
-        $ms->save();
-        $job = new SendWebmentions($ms);
-        dispatch($job);
+        $this->queueWebmentionSending($post);
 
     }
 
@@ -624,5 +620,13 @@ class MicropubController extends Controller
         
     }
 
+    private function queueWebmentionSending($post){
+        $ms = new MentionSend;
+        $ms->post_id = $post->id;
+        $ms->save();
+        $job = new SendWebmentions($ms);
+        dispatch($job);
+
+    }
 
 }

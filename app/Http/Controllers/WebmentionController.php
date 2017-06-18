@@ -30,16 +30,26 @@ class WebmentionController extends Controller
             abort(400);
         }
 
+        $webmention = Webmention::where(['target_url' => $target, 'source_url' => $source])->get()->first();
+
+        if(!$webmention){
+            $webmention = new Webmention;
+            $webmention->source_url = $source;
+            $webmention->target_url = $target;
+        }
+        //TODO auto approve change if previously approved?
+        
+
         //if the source is approved, i don't need or want the vouch, i just auto accept it and throw the vouch away
         //  or if I am not using vouches, and i have a valid source, and target, i just auto accept
         if ($this->isApprovedSource($source) || !config('splatter.webmention.use_vouch')) {
 
-            $webmention = new Webmention;
-            $webmention->source_url = $source;
-            $webmention->target_url = $target;
             $webmention->status = 202;
             $webmention->save();
             //TODO include vouch url if set anyway??
+            
+            $job = new ProcessWebmention($webmention);
+            dispatch($job);
 
             return response('Webmention Accepted', 202);
 
@@ -47,9 +57,6 @@ class WebmentionController extends Controller
         // if we are using vouch, and there is not vouch, or its invalid,  respond retry with 449
         //  still save webmention in case i want to approve manually later
 
-            $webmention = new Webmention;
-            $webmention->source_url = $source;
-            $webmention->target_url = $target;
             $webmention->status = 449;
             $webmention->save();
 
@@ -57,23 +64,23 @@ class WebmentionController extends Controller
                 ->setStatusCode(449, 'Reply With vouch');
 
         } elseif ($this->isApprovedSource($vouch)) {
-            $webmention = new Webmention;
-            $webmention->source_url = $source;
-            $webmention->target_url = $target;
             $webmention->vouch = $vouch;
             $webmention->status = 202;
             $webmention->save();
+
+            $job = new ProcessWebmention($webmention);
+            dispatch($job);
+    
 
             return response('Webmention Accepted', 202);
 
         } else {
 
-            $webmention = new Webmention;
-            $webmention->source_url = $source;
-            $webmention->target_url = $target;
             $webmention->vouch = $vouch;
             $webmention->status = 449;
             $webmention->save();
+
+
 
             return response('Retry With vouch')
                 ->setStatusCode(449, 'Reply With vouch');
