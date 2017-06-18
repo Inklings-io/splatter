@@ -12,7 +12,7 @@ class PersonUrl extends Model
     //TODO: standardize urls going in to this table
     public function person()
     {
-        return $this->hasOne('App\Person');
+        return $this->belongsTo('App\Person');
     }
 
 }

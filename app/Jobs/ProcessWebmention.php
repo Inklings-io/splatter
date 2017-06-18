@@ -8,6 +8,7 @@ require_once base_path('vendor/mf2/mf2/Mf2/Parser.php');
 use App\Webmention;
 use App\Interaction;
 use App\Person;
+use App\PersonUrl;
 use Illuminate\Bus\Queueable;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
@@ -225,48 +226,72 @@ class ProcessWebmention implements ShouldQueue
                     $interaction_type = 'reacji';
                     $comment_data['text'] = html_entity_decode('&#10084;'); //a heart emoji
                 break;
-		default:
+                    default:
                     $interaction_type = $comment_data['type'];
             }
 	    
 
-	    //TODO 'delete' old interactions before saving new one
-	    //$post->interactions()->delete();
+            //TODO ideally it would update and only delete if needed.
+            // soft delete old interactions before saving new one
+            $webmention->interactions()->delete();
 
-//TODO person_mention type
-	    $interaction = new Interaction;
-	    $interaction->url = $comment_data['url'];
-	    if ( isset($comment_data['published']) && !empty($comment_data['published']) ) {
-	        $interaction->published = $comment_data['published'];
-	    }
-	    if ( isset($comment_data['name']) && !empty($comment_data['name']) ) {
-	        $interaction->name = $comment_data['name'];
-	    }
-	    if ( isset($comment_data['content']) && !empty($comment_data['content']) ) {
-	        $interaction->content = $comment_data['content'];
-	    }
-	    if ( isset($comment_data['rsvp']) && !empty($comment_data['rsvp']) ) {
-	        $interaction->rsvp = $comment_data['rsvp'];
-	    }
-	    $interaction->type = $interaction_type;
+            //TODO person_mention type
+            $interaction = new Interaction;
+            $interaction->url = $comment_data['url'];
+            if ( isset($comment_data['published']) && !empty($comment_data['published']) ) {
+                $interaction->published = $comment_data['published'];
+            }
+            if ( isset($comment_data['name']) && !empty($comment_data['name']) ) {
+                $interaction->name = $comment_data['name'];
+            }
+            if ( isset($comment_data['content']) && !empty($comment_data['content']) ) {
+                $interaction->content = $comment_data['content'];
+            }
+            if ( isset($comment_data['rsvp']) && !empty($comment_data['rsvp']) ) {
+                $interaction->rsvp = $comment_data['rsvp'];
+            }
+            $interaction->type = $interaction_type;
 
-	   // TODO move this to a config
-	    $interaction->approved = 1;
+           // TODO move this to a config
+            $interaction->approved = 1;
 
-	    $interaction->webmention()->associate( $webmention);
+            $interaction->webmention()->associate( $webmention);
 
-//TODO find person
-            //$person_id = $this->model_blog_person->storePerson($comment_data['author']);
+            $author = $this->findOrCreatePerson($comment_data['author']);
 
-	    $interaction->save();
+            $interaction->author()->associate( $author);
 
-	    //$post->interactions()->create($interaction);
+            $interaction->save();
 
-//TODO: salmentions
+            $post->interactions()->attach($interaction);
 
-	}
+            //TODO: salmentions
+
+        }
 
 
+    }
+
+    private function findOrCreatePerson($person_data){
+        $person_url = PersonUrl::where(['url' => $person_data['url']])->get()->first();
+        if($person_url){
+            return $person_url->$person;
+        } else { // person_url not found inthe DB, createnew person
+            $person = new Person;
+            if(isset($person_data['name'])){
+                $person->name = $person_data['name'];
+            }
+            if(isset($person_data['photo'])){
+                $person->image = $person_data['photo'];
+            }
+            $person->save();
+            $person_url = new PersonUrl;
+            $person_url->url = $person_data['url'];
+            $person_url->primary = 1;
+            $person_url->person()->associate($person);
+            $person_url->save();
+            return $person;
+        }
     }
 
 

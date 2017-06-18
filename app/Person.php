@@ -20,6 +20,6 @@ class Person extends Model
 
     public function urls()
     {
-        return $this->hasMany('PersonUrls');
+        return $this->hasMany('App\PersonUrl');
     }
 }
