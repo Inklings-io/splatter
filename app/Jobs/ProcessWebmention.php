@@ -9,6 +9,8 @@ use App\Webmention;
 use App\Interaction;
 use App\Person;
 use App\PersonUrl;
+use App\Post;
+use Carbon\Carbon;
 use Illuminate\Bus\Queueable;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
@@ -239,7 +241,7 @@ class ProcessWebmention implements ShouldQueue
             $interaction = new Interaction;
             $interaction->url = $comment_data['url'];
             if ( isset($comment_data['published']) && !empty($comment_data['published']) ) {
-                $interaction->published = $comment_data['published'];
+                $interaction->published = new Carbon($comment_data['published']);
             }
             if ( isset($comment_data['name']) && !empty($comment_data['name']) ) {
                 $interaction->name = $comment_data['name'];
@@ -275,7 +277,7 @@ class ProcessWebmention implements ShouldQueue
     private function findOrCreatePerson($person_data){
         $person_url = PersonUrl::where(['url' => $person_data['url']])->get()->first();
         if($person_url){
-            return $person_url->$person;
+            return $person_url->person()->get()->first();
         } else { // person_url not found inthe DB, createnew person
             $person = new Person;
             if(isset($person_data['name'])){
