@@ -9,6 +9,8 @@ use App\Post;
 use App\Category;
 use App\Media;
 use App\ReplyTo;
+use App\MentionSend;
+use App\Jobs\SendWebmentions;
 use Log;
 
 class MicropubController extends Controller

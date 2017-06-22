@@ -55,6 +55,11 @@ class Post extends Model
         return $this->hasMany('App\ReplyTo');
     }
 
+    public function syndications()
+    {
+        return $this->hasMany('App\SyndicationUrl');
+    }
+
     public function getReacjisAttribute()
     {
 

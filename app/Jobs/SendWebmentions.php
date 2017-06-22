@@ -9,6 +9,7 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
+use Log;
 
 require_once base_path('vendor/indieweb/mention-client/src/IndieWeb/MentionClient.php');
 
@@ -95,7 +96,8 @@ class SendWebmentions implements ShouldQueue
         
         foreach($syndication_urls as $url){
             $response = $client->sendWebmention($source_url, $url);
-            // TOTO add to syndications 
+	    Log::debug(print_r($response, true));
+            // TODO add to syndications 
         }
 
         MentionSend::where(['post_id' = $post_id])->delete();
