@@ -213,14 +213,15 @@
 
     @if(!empty($post['syndications']))
       <div class="syndications">
+	<div>Also on:</div>
         @foreach($post['syndications'] as $elsewhere)
           @if(isset($elsewhere['image']))
-            <a class="u-syndication" href="<?php echo $elsewhere['syndication_url']?>" >
+            <a class="u-syndication" href="<?php echo $elsewhere['url']?>" >
               <img src="<?php echo $elsewhere['image']?>" title="<?php echo $elsewhere['site_name']?>" />
             </a>
           @else
-            <a class="u-syndication" href="<?php echo $elsewhere['syndication_url']?>" >
-              <i class="fa fa-link"></i>
+            <a class="u-syndication" href="{{$elsewhere->url}}" >
+              <i class="fa fa-link"></i> {{str_limit($elsewhere->url, 40, '...')}}<br>
             </a>
           @endif
         @endforeach

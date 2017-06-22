@@ -6,6 +6,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class SyndicationUrl extends Model
 {
+    protected $table = 'post_syndication';
+    public $timestamps = false;
+
     public function post()
     {
         return $this->belongsTo('App\Post');
