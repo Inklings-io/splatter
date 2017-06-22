@@ -14,6 +14,9 @@
     <link rel="token_endpoint" href="{{config('app.url')}}/api/token">
     <link rel="micropub" href="{{config('app.url')}}/api/micropub">
 
+    <link rel="openid.delegate" href="{{config('splatter.owner.url')}}" />
+    <link rel="openid.server" href="https://openid.indieauth.com/openid" />
+
     @if(!empty($added_headers))
       @foreach($added_headers as $added_header)
         {!! $added_header !!}
