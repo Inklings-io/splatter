@@ -13,4 +13,8 @@ class SyndicationUrl extends Model
     {
         return $this->belongsTo('App\Post');
     }
+    public function site()
+    {
+        return $this->belongsTo('App\SyndicationSite', 'syndication_site_id');
+    }
 }

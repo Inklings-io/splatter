@@ -215,14 +215,10 @@
       <div class="syndications">
 	<div>Also on:</div>
         @foreach($post['syndications'] as $elsewhere)
-          @if(isset($elsewhere['image']))
-            <a class="u-syndication" href="<?php echo $elsewhere['url']?>" >
-              <img src="<?php echo $elsewhere['image']?>" title="<?php echo $elsewhere['site_name']?>" />
-            </a>
+          @if(isset($elsewhere->site))
+            <a class="u-syndication" href="{{$elsewhere->url}}" ><img style='height:20px;width:20px;' src="{{$elsewhere->site->image}}" title="{{$elsewhere->site->name}}" /></a>
           @else
-            <a class="u-syndication" href="{{$elsewhere->url}}" >
-              <i class="fa fa-link"></i> {{str_limit($elsewhere->url, 40, '...')}}<br>
-            </a>
+            <a class="u-syndication" href="{{$elsewhere->url}}" ><i class="fa fa-link"></i></a>
           @endif
         @endforeach
       </div>
