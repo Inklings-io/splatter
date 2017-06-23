@@ -268,6 +268,10 @@ class MicropubController extends Controller
                 //I don't do other types such as article, those will need to be specifically set by mp-type
 
             }
+            
+        } // end Post Type Discovery
+
+	
 
         //TODO tag-of, weight, rsvp
         foreach($this->basic_fields as $field_name){
@@ -329,12 +333,6 @@ class MicropubController extends Controller
         }
 
         $post->created_by = $request->attributes->get('client_id');
-
-            
-            // end Post Type Discovery
-        }
-
-	
 
         $post->save();
 

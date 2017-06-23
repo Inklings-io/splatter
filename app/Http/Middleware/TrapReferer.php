@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Log;
+use App\Jobs\ProcessReferer;
 
 class TrapReferer
 {
@@ -24,7 +25,7 @@ class TrapReferer
         //wrap in if vouch
 
         $pr = new ProcessReferer($referer);
-        dispact($pr);
+        dispatch($pr);
 	    //Log::debug(print_r($referer, true));
 	}
         return $next($request);
