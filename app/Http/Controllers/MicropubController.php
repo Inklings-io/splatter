@@ -112,10 +112,14 @@ class MicropubController extends Controller
     }
     public function post_index()
     {
-        $request = request();
 
         //$user = $request->attributes->get('user');
         $request = request();
+
+        if($request->input('q')){
+	   $this->get_index();
+	}
+
         if($request->isJson()){
             $data = $request->input();
         } else {
