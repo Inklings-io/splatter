@@ -118,6 +118,7 @@ class MicropubController extends Controller
 
         if($request->input('q')){
 	   $this->get_index();
+	   exit();
 	}
 
         if($request->isJson()){
@@ -228,6 +229,8 @@ class MicropubController extends Controller
         } 
         $input_data = $data['properties'];
 
+	$modified = false;
+
         // todo if h=entry
         unset($input_data['h']);
         $post = new Post;
@@ -285,6 +288,7 @@ class MicropubController extends Controller
                 if(isset($input_data[$field_name]) && !empty($input_data[$field_name])){
                     $post[$field_name] = $input_data[$field_name][0];
 		    unset($input_data[$field_name]);
+		    $modified = true;
                 }
             }
         }
@@ -297,15 +301,31 @@ class MicropubController extends Controller
                 $post->content = $input_data['content'][0];
             }
 	    unset($input_data['content']);
+	    $modified = true;
         }
 
-        if(isset($input_data['slug'])){
+        if(isset($input_data['mp-slug'])){
+	    if(!empty($input_data['mp-slug'])){
+		if(is_array($input_data['mp-slug'])){
+                    $post->slug = $input_data['mp-slug'][0];
+		} else {
+                    $post->slug = $input_data['mp-slug'];
+		}
+	    }
+            unset($input_data['mp-slug']);
+	    $modified = true;
+
+        } elseif(isset($input_data['slug'])){
 	    if(!empty($input_data['slug'])){
-                $post->slug = $input_data['slug'][0];
-                $modified = true;
+		if(is_array($input_data['slug'])){
+                    $post->slug = $input_data['slug'][0];
+		} else {
+                    $post->slug = $input_data['slug'];
+		}
 	    }
             unset($input_data['slug']);
-        } else {
+	    $modified = true;
+	} else {
             $post->slug = '';
         }
 
@@ -347,6 +367,7 @@ class MicropubController extends Controller
                 $post->categories()->save($category);
             }
             unset($input_data['category']);
+	    $modified = true;
         } 
 
         //Add in-reply-to values to post
@@ -358,6 +379,7 @@ class MicropubController extends Controller
                 $post->inReplyTos()->save($reply_to);
             }
             unset($input_data['in-reply-to']);
+	    $modified = true;
         } 
 
         //Add media items to post
@@ -381,6 +403,7 @@ class MicropubController extends Controller
                 }
             } 
             unset($input_data[$field_name]);
+	    $modified = true;
         } 
 
         if(!empty($input_data)){
