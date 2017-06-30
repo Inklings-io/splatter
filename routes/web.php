@@ -22,6 +22,10 @@ Route::get('category/{name}', 'FeedController@category');
 
 Route::get('s/{eid}','PostController@shortener');
 
+Route::get(',,,', function () {
+
+    return view('lulz.chameleon');
+});
 Route::get('8675', function () {
     abort(309);
 });
