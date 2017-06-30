@@ -27,7 +27,10 @@ Route::get(',,,', function () {
     return view('lulz.chameleon');
 });
 Route::get('8675', function () {
-    abort(309);
+    return response()
+	->view('errors.309')
+	->setStatusCode(309, 'For A Good Time Call');
+    //abort(309);
 });
 
 //NOTE: patterns for type, year, month, day, and daycount are in RouteServiceProvider
