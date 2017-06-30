@@ -22,7 +22,7 @@ class Posts extends Migration
             $table->tinyInteger('day');
             $table->smallInteger('daycount');
             $table->string('slug')->nullable();
-            $table->enum('type', ['article','note','photo','checkin','event','rsvp','like','bookmark','listen','watch','video','audio','tag','follow','unfollow','repost','snark','weight'])->default('note');
+            $table->enum('type', ['article','note','photo','checkin','event','rsvp','like','bookmark','listen','watch','video','audio','tag','follow','unfollow','repost','snark','weight','reply'])->default('note');
 
             //additional metadata
             $table->boolean('context_parsed')->default(false);

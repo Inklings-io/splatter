@@ -2,6 +2,8 @@
 
 namespace App\Jobs;
 
+require_once base_path('vendor/indieweb/mention-client/src/IndieWeb/MentionClient.php');
+
 use App\MentionSend;
 use App\Post;
 use Illuminate\Bus\Queueable;
@@ -9,9 +11,9 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
+use IndieWeb\MentionClient;
 use Log;
 
-require_once base_path('vendor/indieweb/mention-client/src/IndieWeb/MentionClient.php');
 
 class SendWebmentions implements ShouldQueue
 {
@@ -27,6 +29,7 @@ class SendWebmentions implements ShouldQueue
     public function __construct(MentionSend $mention_send_entry)
     {
         //
+        $post_id = $this->mention_send_entry = $mention_send_entry;
     }
 
     /**
@@ -39,10 +42,7 @@ class SendWebmentions implements ShouldQueue
 
         $post_id = $this->mention_send_entry->post_id;
         //
-        $post = Post::find($post_id)
-            ->with('categories')
-            ->with('inReplyTos')
-            ->with('interactions');
+        $post = Post::find($post_id);
 
         $url_set = array();
 
@@ -77,18 +77,19 @@ class SendWebmentions implements ShouldQueue
             }
         }
 
-        $client = new IndieWeb\MentionClient();
+        $client = new MentionClient();
         $urls = $client->findOutgoingLinks($post->content);
 
         $url_set = array_merge($url_set, $urls);
 
         $url_set = array_unique($url_set);
         
-        $source_url = config('app.url') . $post->permalink);
+        $source_url = config('app.url') . $post->permalink;
 
         foreach($url_set as $url){
             //TODO  IF VOUCH ..
             //$response = $client->sendWebmention($sourceURL, $targetURL, ['vouch'=>$vouch]);
+            Log::debug('sending webmention to ' . $url . ' from '. $source_url);
             $response = $client->sendWebmention($source_url, $url);
         }
 
@@ -100,6 +101,6 @@ class SendWebmentions implements ShouldQueue
             // TODO add to syndications 
         }
 
-        MentionSend::where(['post_id' = $post_id])->delete();
+        MentionSend::where(['post_id' => $post_id])->delete();
     }
 }

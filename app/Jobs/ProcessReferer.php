@@ -7,6 +7,7 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
+use App\Vouch;
 
 class ProcessReferer implements ShouldQueue
 {
@@ -94,7 +95,7 @@ class ProcessReferer implements ShouldQueue
             $vouch = Vouch::where(['domain' => $domain])->get()->first();
 
             if($vouch){
-                if(empty($vouch->alt_url)){
+                if(empty($vouch->alt_url) && $vouch->url != $referer ){
                     $vouch->alt_url = $referer;
                     $vouch->save();
                 }
