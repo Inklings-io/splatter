@@ -22,6 +22,10 @@ Route::get('category/{name}', 'FeedController@category');
 
 Route::get('s/{eid}','PostController@shortener');
 
+Route::get('8675', function () {
+    abort(309);
+});
+
 //NOTE: patterns for type, year, month, day, and daycount are in RouteServiceProvider
 Route::get('{year}','FeedController@yearFeed');
 Route::get('{year}/{month}','FeedController@monthFeed');
@@ -29,3 +33,4 @@ Route::get('{type_any}/{year}/{month}/{day}/{daycount}','PostController@view')->
 Route::get('{type_any}/{year}/{month}/{day}/{daycount}/{slug}','PostController@view')->name('single_post');
 Route::get('{type}','FeedController@typeFeed');
 Route::get('{type_i}','FeedController@typeFeedRedir');
+
