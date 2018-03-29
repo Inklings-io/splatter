@@ -167,16 +167,16 @@
 
 
     @if($post->comments->count() > 0) 
-      <span class="comments-link"><a href="{{$post->permalink}}#comments" title="Comments for <?php echo $post['name']?>"><i class="fa fa-comment-o"></i> {{$post->comments->count()}}</a></span>
+      <span class="comments-link" title="Comments for <?php echo $post['name']?>"><i class="fa fa-comment-o"></i> {{$post->comments->count()}}</span>
       <span class="sep"> | </span>
     @endif
 
     @if($post->reposts->count() > 0)
       <span class="repost-container">
         <span class="repost"><i class="fa fa-retweet"></i></span>
-        <span class="repost-count">{{$post->resposts->count()}}</span>
+        <span class="repost-count">{{$post->reposts->count()}}</span>
         <span class="repost-sources">
-          @foreach($reposts as $repost)
+          @foreach($post->reposts as $repost)
             <div class="h-cite u-repost">
               <time class="date dt-published" style="display:none" datetime="{{$repost->published}}">{{date("Y-m-d", strtotime($repost->published))}}</time></a>
               <span class="h-card u-author">

@@ -290,7 +290,7 @@ class ProcessWebmention implements ShouldQueue
             $person_url = new PersonUrl;
             $person_url->url = $person_data['url'];
             $person_url->primary = 1;
-            $person_url->person()->associate($person);
+            $person_url->person_id = $person->id;
             $person_url->save();
             return $person;
         }
