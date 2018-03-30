@@ -36,6 +36,7 @@
         @endif
       </span>
     </div>
+    </div>
 
     @if($post->name && $post->type != 'listen')
       <div class="row">

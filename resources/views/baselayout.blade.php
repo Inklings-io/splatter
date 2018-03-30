@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <meta charset="utf-8">
+    <meta charset="utf-8"/>
     <link rel="stylesheet" href="{{mix('css/app.css')}}" />
 
     @yield('header')
@@ -9,10 +9,10 @@
     <link rel="profile" href="http://microformats.org/profile/specs" />
     <link rel="profile" href="http://microformats.org/profile/hatom" />
 
-    <link rel="authorization_endpoint" href="https://indieauth.com/auth">
-    <link rel="webmention" href="{{config('app.url')}}/api/webmention">
-    <link rel="token_endpoint" href="{{config('app.url')}}/api/token">
-    <link rel="micropub" href="{{config('app.url')}}/api/micropub">
+    <link rel="authorization_endpoint" href="https://indieauth.com/auth"/>
+    <link rel="webmention" href="{{config('app.url')}}/api/webmention"/>
+    <link rel="token_endpoint" href="{{config('app.url')}}/api/token"/>
+    <link rel="micropub" href="{{config('app.url')}}/api/micropub"/>
 
     <link rel="openid.delegate" href="{{config('splatter.owner.url')}}" />
     <link rel="openid.server" href="https://openid.indieauth.com/openid" />
@@ -28,7 +28,7 @@
       <link rel="stylesheet" href="/css/old/main.css">
       <link rel='stylesheet' id='sempress-style-css'  href='/css/old/stylesheet.css' type='text/css' media='all' />
     -->
-    <link href="/vendor/css/font-awesome.min.css" rel="stylesheet">
+    <link href="/vendor/css/font-awesome.min.css" rel="stylesheet"/>
 
   </head>
 
