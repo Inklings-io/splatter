@@ -2,6 +2,7 @@
 
 use Faker\Generator as Faker;
 use App\Post;
+//use App\Category;
 use Carbon\Carbon;
 
 /** @var \Illuminate\Database\Eloquent\Factory $factory */
@@ -49,6 +50,8 @@ $factory->define(Post::class, function (Faker $faker) {
         }
     }
 
+    //$categories = Category::inRandomOrder()->limit(2);
+
     return [
         'year' => $timestamp->year,
         'month' => $timestamp->month,
@@ -63,6 +66,7 @@ $factory->define(Post::class, function (Faker $faker) {
         'location' => $location,
         'weight' => $weight,
         'published' => $timestamp,
+        //'categories' => $categories,
         'created_by' => 'https://inklings.io'
     ];
 

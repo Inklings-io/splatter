@@ -5,9 +5,9 @@
       <div class='context_header'>
         <span class="minicard h-card u-author">
           <img class='context_author u-photo' src="{{$context->author->image ?: '/image/person.png'}}" />
-          <span class="p-name u-url" href="{{$context->author->url ?: $context->url}}" rel="nofollow" title="{{$context->author->name ?: 'View Author'}}" >
+          <a class="p-name u-url" href="{{$context->author->url ?: $context->url}}" rel="nofollow" title="{{$context->author->name ?: 'View Author'}}" >
             {{$context->author->name ?: 'someone'}}
-          </span>
+          </a>
         </span>
 
         <a href="{{$context->url}}" class="u-url permalink">

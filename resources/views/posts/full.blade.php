@@ -138,7 +138,7 @@
 
   <footer class="row entry-meta">
 
-    @if(!empty($post->reacjis) )
+    @if( $post->reacjis->count() > 0)
       <span id="general-reacjis">
         @foreach($post->reacjis as $content => $reacjigroup)
           <span class="reacji-container">
@@ -211,10 +211,10 @@
       @endforeach
     @endif
 
-    @if(!empty($post['syndications']))
+    @if( $post->syndications->count() > 0)
       <div class="syndications">
-	<div>Also on:</div>
-        @foreach($post['syndications'] as $elsewhere)
+        <div>Also on:</div>
+        @foreach($post->syndications as $elsewhere)
           @if(isset($elsewhere->site))
             <a class="u-syndication" href="{{$elsewhere->url}}" ><img style='height:20px;width:20px;' src="{{$elsewhere->site->image}}" title="{{$elsewhere->site->name}}" /></a>
           @else

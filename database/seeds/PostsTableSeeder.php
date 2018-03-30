@@ -6,6 +6,7 @@ use App\Interaction;
 use App\Context;
 use App\ReplyTo;
 use App\SyndicationUrl;
+use App\Category;
 
 class PostsTableSeeder extends Seeder
 {
@@ -70,6 +71,12 @@ class PostsTableSeeder extends Seeder
 
                         }
                     }
+                }
+            }
+            if(rand(0,5) < 1){
+                $post->categories()->save( Category::inRandomOrder()->get()->first());
+                if(rand(0,3) < 1){
+                    $post->categories()->save( Category::inRandomOrder()->get()->first());
                 }
             }
 
