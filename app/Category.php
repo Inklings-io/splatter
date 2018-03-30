@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Category extends Model
 {
     protected $fillable = ['name'];
+    public $timestamps = false;
 
     public function posts()
     {
@@ -27,7 +28,11 @@ class Category extends Model
             ->where('category_id', $this->id)
             ->groupBy('category_id')
             ->get();
-        return $q->first()->ct;
+        if(!$q->first()){
+            return 0;
+        } else {
+            return $q->first()->ct;
+        }
     }
 
 

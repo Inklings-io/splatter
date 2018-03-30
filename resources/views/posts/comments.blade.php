@@ -5,9 +5,9 @@
       <div class='comment_header'>
         <span class="minicard h-card u-author">
           <img class='comment_author u-photo' src="{{$comment->author->image ?: '/image/person.png'}}" />
-          <span class="p-name u-url" href="{{$comment->author->url ?: $comment->url}}" rel="nofollow" title="{{$comment->author->name ?: 'View Author'}}" >
+          <a class="p-name u-url" href="{{$comment->author->url ?: $comment->url}}" rel="nofollow" title="{{$comment->author->name ?: 'View Author'}}" >
             {{$comment->author->name ?: 'someone'}}
-          </span>
+          </a>
         </span>
 
         <a href="{{$comment->url}}" class="u-url permalink">

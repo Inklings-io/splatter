@@ -16,7 +16,7 @@ class SyndicationSites extends Migration
         Schema::create('syndication_sites', function (Blueprint $table) {
             $table->increments('id');
             $table->string('name');
-            $table->string('image');
+            $table->string('image')->nullable();
             $table->string('url_match');
         });
     }

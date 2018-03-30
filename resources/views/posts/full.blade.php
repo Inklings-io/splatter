@@ -139,7 +139,7 @@
 
   <footer class="row entry-meta">
 
-    @if(!empty($post->reacjis) )
+    @if( $post->reacjis->count() > 0)
       <span id="general-reacjis">
         @foreach($post->reacjis as $content => $reacjigroup)
           <span class="reacji-container">
@@ -168,16 +168,16 @@
 
 
     @if($post->comments->count() > 0) 
-      <span class="comments-link"><a href="{{$post->permalink}}#comments" title="Comments for <?php echo $post['name']?>"><i class="fa fa-comment-o"></i> {{$post->comments->count()}}</a></span>
+      <span class="comments-link" title="Comments for <?php echo $post['name']?>"><i class="fa fa-comment-o"></i> {{$post->comments->count()}}</span>
       <span class="sep"> | </span>
     @endif
 
     @if($post->reposts->count() > 0)
       <span class="repost-container">
         <span class="repost"><i class="fa fa-retweet"></i></span>
-        <span class="repost-count">{{$post->resposts->count()}}</span>
+        <span class="repost-count">{{$post->reposts->count()}}</span>
         <span class="repost-sources">
-          @foreach($reposts as $repost)
+          @foreach($post->reposts as $repost)
             <div class="h-cite u-repost">
               <time class="date dt-published" style="display:none" datetime="{{$repost->published}}">{{date("Y-m-d", strtotime($repost->published))}}</time></a>
               <span class="h-card u-author">
@@ -212,10 +212,10 @@
       @endforeach
     @endif
 
-    @if(!empty($post['syndications']))
+    @if( $post->syndications->count() > 0)
       <div class="syndications">
-	<div>Also on:</div>
-        @foreach($post['syndications'] as $elsewhere)
+        <div>Also on:</div>
+        @foreach($post->syndications as $elsewhere)
           @if(isset($elsewhere->site))
             <a class="u-syndication" href="{{$elsewhere->url}}" ><img style='height:20px;width:20px;' src="{{$elsewhere->site->image}}" title="{{$elsewhere->site->name}}" /></a>
           @else
