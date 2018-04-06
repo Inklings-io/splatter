@@ -9,7 +9,7 @@ use Carbon\Carbon;
 $factory->define(Post::class, function (Faker $faker) {
 
     // ['article','note','photo','checkin','event','rsvp','like','bookmark','listen','watch','video','audio','tag','follow','unfollow','repost','snark','weight','reply'])
-    $types = ['note','note','note', 'article', 'like', 'reply', 'snark', 'checkin', 'weight']; //weight toward notes
+    $types = ['note','note','note', 'photo', 'article', 'like', 'reply', 'snark', 'checkin', 'weight']; //weight toward notes
     //$now = Carbon::now()->timestamp;
     //$last_week = Carbon::now()->subDays(7)->timestamp;
     //$timestamp = Carbon::createFromTimestamp(rand($last_week, $now));
@@ -42,7 +42,18 @@ $factory->define(Post::class, function (Faker $faker) {
         $content = $faker->sentence(rand(3,7));
         $weight = '{"unit":"lbs","num":'. (rand(2000, 2510)/ 10.0)  .'}';
 
-    } else { //note and reply and snark 
+    } elseif($type=='photo') {
+        $content = $faker->text();
+        if(rand(0,2) >=1 ){
+            $place = $faker->word();
+            $location = '{"latitude":'.$faker->latitude() . ',"longitude":'.$faker->longitude().',"name":"'. $place .'"}';
+        }
+        if(rand(0,2) >=1 ){
+            $title = $faker->sentence(rand(3,7));
+            $slug = preg_replace('/\ /', '-', $title);
+        }
+
+    } else { //note, reply, snark, photo
         $content = $faker->text();
         if(rand(0,2) >=1 ){
             $title = $faker->sentence(rand(3,7));

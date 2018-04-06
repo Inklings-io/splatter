@@ -1,5 +1,7 @@
 @extends('baselayout', ['bodyclass' => 'h-entry'])
 
 @section('content')
-    @include('posts.full', ['post' => $post])
+    <div class="postfull">
+        @include('posts.full', ['post' => $post])
+    </div>
 @stop

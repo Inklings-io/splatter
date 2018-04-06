@@ -26,7 +26,85 @@ body {
 
 .postfeed {
     position:relative;
+    background-color: white;
+    border-radius: 20px;
+    padding: 0;
+    .feed-title { 
+        text-align:center;
+        padding:20px 0;
+    }
+    .pagination {
+        margin:0;
+        width:100%;
+        display:inline;
+        text-align:center;
+        .page-item {
+            &:first-of-type .page-link{
+                border-bottom-left-radius:20px;
+            }
+            &:last-of-type .page-link{
+                border-bottom-right-radius:20px;
+            }
+            .page-link {
+                padding:22px;
+                border:none;
+                width:50%;
+                text-align:center;
+
+                &:hover {
+                    background-color:#aaa;
+                }
+            }
+        }
+
+    }
     article {
+        border-bottom:1px solid #ccc;
+        border-top:1px solid #ccc;
+        padding: 20px;
+        width:100%;
+        &:first-of-type {
+            border-top:2px solid #eee;
+        }
+        &:last-of-type {
+            border-bottom:2px solid #eee;
+        }
+        img {
+            width:100%;
+        }
+        header {
+            img {
+                height:60px;
+                width:60px;
+            }
+        }
+        header > div {
+            font-size:10pt;
+            margin-bottom:10px;
+        }
+
+        &.deleted:before {
+            content:'Deleted';
+            color:darkred;
+        }
+
+    }
+
+    footer {
+        margin:0;
+        margin-top:10px;
+    }
+}
+
+.postfull {
+    position:relative;
+    background-color: white;
+    border-radius: 20px;
+    padding: 20px 0;
+    .postbox {
+        border-bottom:2px solid #999;
+        border-top:2px solid #999;
+        padding: 20px;
         width:100%;
         img {
             width:100%;
@@ -41,30 +119,59 @@ body {
             font-size:10pt;
             margin-bottom:10px;
         }
+
+        &.deleted:before {
+            content:'Deleted';
+            color:darkred;
+        }
+
+        &.context {
+            padding-left:80px;
+        }
     }
-    article.deleted:before {
-        content:'Deleted';
-        color:darkred;
+    .context.postbox {
+        border-bottom:1px solid #ccc;
+        border-top:1px solid #ccc;
+        &:first-of-type {
+            border-top:2px solid #eee;
+        }
     }
+    .comment {
+        padding: 15px 0;
+        border-bottom:1px solid #ccc;
+        border-top:1px solid #ccc;
+        padding-left:80px;
+        
+        .subcomment {
+            margin-left:25px;
+            margin-top:25px;
+        }
+        &:last-of-type {
+            border-bottom:2px solid #eee;
+        }
+    }
+
     footer {
         margin:0;
         margin-top:10px;
     }
 }
+
+#site-generator {
+    padding: 10px;
+    text-align:center;
+}
+
+
 .postbox.deleted:before {
     content:'Deleted';
     color:darkred;
 }
 
-.postbox, .context, .comment {
-    border:1px solid black;
-    box-shadow:0 1px 5px 0 rgba(0,0,0,0.2);
-    margin:10px;
-    padding: 20px;
+.postbox, .comment {
     background-color: white;
 
     header {
-
         permalink {
             a {
                 color: #ddd;
@@ -94,44 +201,33 @@ body {
     }
 }
 
-.comment, .context {
-    background-color: #f9f9f9;
-    margin-left:25px;
-    width:96%;
-    
-    .subcomment {
-        margin-left:25px;
-        margin-top:25px;
-    }
-}
 
-.reacji-container, 
-.repost-container {
+.reacji-container, .repost-container {
     position:relative;
-}
-.reacji-sources,
-.repost-sources {
-  display:none ;
-  background-color: #34627d;
-  border-radius: 10px;
-  display: none;
-  padding: 10px;
-  position: absolute;
-  top:-5px;
-  left:0;
-  white-space: nowrap;
-  min-width:100px;
-  z-index:100;
-  margin-top:20px;
 
-  a {
-      color:black
-  }
-  img {
-      height:20px;
-      width:20px;
-  }
+    .reacji-sources, .repost-sources {
+      display:none ;
+      background-color: #34627d;
+      border-radius: 10px;
+      display: none;
+      padding: 10px;
+      position: absolute;
+      top:-5px;
+      left:0;
+      white-space: nowrap;
+      min-width:100px;
+      z-index:100;
+      margin-top:20px;
 
+      a {
+          color:black
+      }
+      img {
+          height:20px;
+          width:20px;
+      }
+
+    }
 }
 .reacji-container:hover > .reacji-sources ,
 .repost-container:hover > .repost-sources {

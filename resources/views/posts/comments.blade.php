@@ -22,6 +22,18 @@
         {{$comment->content}}
       </div>
 
+    @if( $comment->syndications->count() > 0)
+      <div class="syndications">
+        @foreach($comment->syndications as $elsewhere)
+          @if(isset($elsewhere->site))
+            <a class="u-syndication" href="{{$elsewhere->url}}" ><img style='height:20px;width:20px;' src="{{$elsewhere->site->image}}" title="{{$elsewhere->site->name}}" /></a>
+          @else
+            <a class="u-syndication" href="{{$elsewhere->url}}" ><i class="fa fa-link"></i></a>
+          @endif
+        @endforeach
+      </div>
+    @endif
+
       @if(!empty($comment->comments) )
         @foreach($comment->comments as $subcomment)
           <div class="subcomment u-comment h-cite">
@@ -31,6 +43,18 @@
                 <span class="p-name u-url" href="{{$subcomment->author->url ?: $subcomment->url}}" rel="nofollow" title="{{$subcomment->author->name ?: 'View Author'}}" >
                   {{$subcomment->author->name ?: 'someone'}}
                 </span>
+
+                @if( $subcomment->syndications->count() > 0)
+                  <div class="syndications">
+                    @foreach($subcomment->syndications as $elsewhere)
+                      @if(isset($elsewhere->site))
+                        <a class="u-syndication" href="{{$elsewhere->url}}" ><img style='height:20px;width:20px;' src="{{$elsewhere->site->image}}" title="{{$elsewhere->site->name}}" /></a>
+                      @else
+                        <a class="u-syndication" href="{{$elsewhere->url}}" ><i class="fa fa-link"></i></a>
+                      @endif
+                    @endforeach
+                  </div>
+                @endif
 
               </span>
               <a href="{{$subcomment->url}}" class="u-url permalink">

@@ -37,8 +37,8 @@
     <div class="row">
       <div class="col-sm-12">
         <header class="{{($bodyclass == 'h-card' ? '' : 'p-author h-card') }}" id="headBanner" role="banner">
-          <h1 id="site-title"><a href="{{$app_url}}" title="{{$site_name}}" rel="home">{{$site_name}}</a></h1>
-          <h2><a class="p-name u-url" href="{{$owner['url']}}" title="{{$owner['name']}}">{{$owner['name']}}</a></h2>
+          <div id="site-title"><a href="{{$app_url}}" title="{{$site_name}}" rel="home">{{$site_name}}</a></div>
+          <div><a class="p-name u-url" href="{{$owner['url']}}" title="{{$owner['name']}}">{{$owner['name']}}</a></div>
           @if(isset($owner['role']) && !empty($owner['role']))
             <h3 id="site-description" class="p-role">{{$owner['role']}}</h3>
           @endif
@@ -90,7 +90,7 @@
     </div>
 
     <div class="row">
-      <div class="col-sm-12">
+      <div class="col-sm-12 col-lg-9">
        @include('shared.footer')
 
       </div>

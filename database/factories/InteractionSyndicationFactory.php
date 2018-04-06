@@ -1,9 +1,14 @@
 <?php
 
 use Faker\Generator as Faker;
+use App\InteractionSyndication;
+use App\SyndicationSite;
 
-$factory->define(Model::class, function (Faker $faker) {
+$factory->define(InteractionSyndication::class, function (Faker $faker) {
     return [
-        //
+        'url' => $faker->url(),
+        'syndication_site_id' => function() {
+            return SyndicationSite::inRandomOrder()->first()->id;
+        },
     ];
 });

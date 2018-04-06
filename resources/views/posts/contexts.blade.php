@@ -22,6 +22,18 @@
         {{$context->content}}
       </div>
 
+        @if( $context->syndications->count() > 0)
+          <div class="syndications">
+            @foreach($context->syndications as $elsewhere)
+              @if(isset($elsewhere->site))
+                <a class="u-syndication" href="{{$elsewhere->url}}" ><img style='height:20px;width:20px;' src="{{$elsewhere->site->image}}" title="{{$elsewhere->site->name}}" /></a>
+              @else
+                <a class="u-syndication" href="{{$elsewhere->url}}" ><i class="fa fa-link"></i></a>
+              @endif
+            @endforeach
+          </div>
+        @endif
+
     </div>
   @endforeach
 </div>

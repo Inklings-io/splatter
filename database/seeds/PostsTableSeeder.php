@@ -3,9 +3,11 @@
 use Illuminate\Database\Seeder;
 use App\Post;
 use App\Interaction;
+use App\InteractionSyndication;
 use App\Context;
+use App\ContextSyndication;
 use App\ReplyTo;
-use App\SyndicationUrl;
+use App\PostSyndication;
 use App\Category;
 
 class PostsTableSeeder extends Seeder
@@ -22,18 +24,29 @@ class PostsTableSeeder extends Seeder
 
 
             if(rand(0,3) == 0){
-                factory(SyndicationUrl::class, rand(1,3))->create(['post_id' => $post->id]);
+                factory(PostSyndication::class, rand(1,3))->create(['post_id' => $post->id]);
             }
 
-            if($post->type == 'reply' || $post->type){
+            if($post->type == 'photo' ){
+                $post->media()->save( App\Media::inRandomOrder()->get()->first());
+
+            }
+
+            if($post->type != 'checkin' ) {
 
                 factory(ReplyTo::class)->create(['post_id' => $post->id]);
                 $context = factory(Context::class)->create();
+                if(rand(0,3) == 0){
+                    factory(ContextSyndication::class, rand(1,3))->create(['context_id' => $context->id]);
+                }
                 $post->contexts()->save($context);
                 
                 $parent_context = $context;
                 for($k = 0 ; $k < rand(-1,4); $k ++){
                     $context2 = factory(Context::class)->create();
+                    if(rand(0,3) == 0){
+                        factory(ContextSyndication::class, rand(1,2))->create(['context_id' => $context2->id]);
+                    }
                     $parent_context->contexts()->save($context2);
                     $parent_context = $context2;
                 }
@@ -59,14 +72,23 @@ class PostsTableSeeder extends Seeder
             for($j = 0 ; $j < rand(0,10); $j ++){
                 $interaction = factory(Interaction::class)->create();
                 $post->interactions()->save($interaction);
+                if(rand(0,3) == 0){
+                    factory(InteractionSyndication::class, rand(1,3))->create(['interaction_id' => $interaction->id]);
+                }
 
                 // add some reply's to any replies, weight toward there being none
                 if($interaction->type == 'reply' && rand(0,1) == 1){
                     for($k = 0 ; $k < rand(0,4); $k ++){
                         $interaction2 = factory(Interaction::class)->create();
+                        if(rand(0,3) == 0){
+                            factory(InteractionSyndication::class, rand(1,2))->create(['interaction_id' => $interaction2->id]);
+                        }
                         $interaction->interactions()->save($interaction2);
                         if(rand(0,2) == 0){
                             $interaction3 = factory(Interaction::class)->create();
+                            if(rand(0,3) == 0){
+                                factory(InteractionSyndication::class, rand(1,2))->create(['interaction_id' => $interaction3->id]);
+                            }
                             $interaction2->interactions()->save($interaction3);
 
                         }
