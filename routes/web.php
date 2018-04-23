@@ -15,7 +15,7 @@
     // return view('welcome');
 // });
 
-Route::get('/','FeedController@home');
+Route::get('/','FeedController@home')->name('home');
 Route::get('/jf2feed','FeedController@home_jf2');
 Route::get('/yamlfeed','FeedController@home_yaml');
 Route::get('category/{name}', 'FeedController@category');

@@ -41,6 +41,8 @@ class ProcessReferer implements ShouldQueue
         curl_setopt($c, CURLOPT_URL, $referer);
         curl_setopt($c, CURLOPT_FOLLOWLOCATION, 1);
         curl_setopt($c, CURLOPT_MAXREDIRS, 20);
+        curl_setopt($c, CURLOPT_CONNECTTIMEOUT, 20); 
+        curl_setopt($c, CURLOPT_TIMEOUT, 120); 
         $referer = curl_getinfo($c, CURLINFO_EFFECTIVE_URL);
         $page_content = curl_exec($c);
 

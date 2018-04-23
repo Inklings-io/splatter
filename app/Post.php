@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Log;
 use DB;
 use App\Scopes\AuthorizedScope;
+use IndieAuth;
 
 class Post extends Model
 {
@@ -38,7 +39,13 @@ class Post extends Model
 
     public function interactions()
     {
-        return $this->belongsToMany('App\Interaction');
+        $owner = trim(config('splatter.owner.url'), '/');
+
+        if(IndieAuth::is_user($owner)){
+            return $this->belongsToMany('App\Interaction');
+        } else {
+            return $this->belongsToMany('App\Interaction')->where(['approved' => 1]);
+        }
     }
 
     public function getCommentsAttribute()

@@ -16,6 +16,7 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
+use Illuminate\Support\Facades\Log;
 
 use Mf2;
 
@@ -43,6 +44,7 @@ class ProcessWebmention implements ShouldQueue
      */
     public function handle()
     {
+        Log::debug('processing webmention.');
         $webmention = $this->webmention;
         if ($webmention->status_code != 202){
             return true;
@@ -64,14 +66,25 @@ class ProcessWebmention implements ShouldQueue
         try {
             $route = app('router')->getRoutes()->match(app('request')->create($target_url));
             $route_name = $route->getName();
+            Log::debug('name: ' . $route_name);
 
-            $year = $route->parameters['year'];
-            $month = $route->parameters['month'];
-            $day = $route->parameters['day'];
-            $daycount = $route->parameters['daycount'];
+            if(isset($route->parameters['year'])){
+                $year = $route->parameters['year'];
+            }
+            if(isset($route->parameters['month'])){
+                $month = $route->parameters['month'];
+            }
+            if(isset($route->parameters['day'])){
+                $day = $route->parameters['day'];
+            }
+            if(isset($route->parameters['daycount'])){
+                $daycount = $route->parameters['daycount'];
+            }
 
-            $post = Post::where(['year' => $year, 'month' => $month, 'day' => $day, 'daycount' => $daycount])
-                ->get()->first();
+            if(isset($daycount) && isset($day) && isset($month) && isset($year)){
+                $post = Post::where(['year' => $year, 'month' => $month, 'day' => $day, 'daycount' => $daycount])
+                    ->get()->first();
+            }
 
         } catch(Exception $e) {
 
@@ -83,6 +96,7 @@ class ProcessWebmention implements ShouldQueue
             
         //when editing i don't care about the vouch, i've already processed and approved it
         if(!$editing && $vouch_url){
+            Log::debug('already approved?.');
             $valid_link_found = false;
             $c = curl_init();
             curl_setopt($c, CURLOPT_RETURNTRANSFER, 1);
@@ -111,6 +125,7 @@ class ProcessWebmention implements ShouldQueue
                 }
             }
             if (!$valid_link_found) {
+            Log::debug('valid link found.');
                 //repeat all that for rel before href (because preg_match_all doesn't like reused names)
                 $reg_ex_match = '/(rel=[\'"](?<rel>[^\'"]+)[\'"][^>]*href=[\'"](?<href>[^\'"]+)[\'"])/';
                 $matches = array();
@@ -129,6 +144,8 @@ class ProcessWebmention implements ShouldQueue
                 }
             }
             if (!$valid_link_found) {
+            Log::debug('invalid link.');
+                //repeat all that for rel before href (because preg_match_all doesn't like reused names)
                 $webmention->status_code = '400';
                 $webmention->status = 'Vouch Invalid';
                 $webmention->save();
@@ -140,6 +157,7 @@ class ProcessWebmention implements ShouldQueue
         //TODO shortcut this if it matches our HTTP_SERVER OR HTTPS_SERVER
 
 
+            //Log::debug('running curl.');
         //to verify that target is on my site
         $c = curl_init();
         curl_setopt($c, CURLOPT_NOBODY, 1);
@@ -163,6 +181,7 @@ class ProcessWebmention implements ShouldQueue
         $page_content = curl_exec($c);
 
         //$this->log->write(print_r($real_source_url, true));
+        Log::debug('real_source_url: ' . $real_source_url);
         $return_code = curl_getinfo($c, CURLINFO_HTTP_CODE);
 
 
@@ -193,6 +212,7 @@ class ProcessWebmention implements ShouldQueue
             }
             return true;
         } else {
+            //Log::debug('processing page content');
 
             if($route_name != 'single_post' && $route_name != 'single_post_no_slug') {
                 //TODO create generic mention
@@ -206,7 +226,9 @@ class ProcessWebmention implements ShouldQueue
                     break;
                 }
             }
+            //Log::debug('parsed mf2');
 
+            Log::debug(' found ' . $comment_data['type']);
 	   
             switch ($comment_data['type']) {
                 case 'reply':
@@ -219,7 +241,7 @@ class ProcessWebmention implements ShouldQueue
                     }
 
                     $interaction_type = 'reply';
-                    if(EmojiRecognizer::isSingleEmoji($content_text)) {
+                    if(\EmojiRecognizer::isSingleEmoji($content_text)) {
                         $interaction_type = 'reacji';
                         $comment_data['text'] = $content_text;
                     }
@@ -236,6 +258,7 @@ class ProcessWebmention implements ShouldQueue
             //TODO ideally it would update and only delete if needed.
             // soft delete old interactions before saving new one
             $webmention->interactions()->delete();
+            //Log::debug('deleted any old interactions ');
 
             //TODO person_mention type
             $interaction = new Interaction;
@@ -253,6 +276,7 @@ class ProcessWebmention implements ShouldQueue
                 $interaction->rsvp = $comment_data['rsvp'];
             }
             $interaction->type = $interaction_type;
+            //Log::debug('created interaction locally');
 
            // TODO move this to a config
             $interaction->approved = 1;
@@ -264,10 +288,14 @@ class ProcessWebmention implements ShouldQueue
             $interaction->author()->associate( $author);
 
             $interaction->save();
+            //Log::debug('interaction saved');
 
             $post->interactions()->attach($interaction);
 
             //TODO: salmentions
+            $webmention->status_code = '200';
+            $webmention->status = 'OK';
+            $webmention->save();
 
         }
 
@@ -297,386 +325,386 @@ class ProcessWebmention implements ShouldQueue
     }
 
 
-private function truncate($text, $maxTextLength, $maxLines) {
-  $lines = explode("\n", $text);
-  $visibleLines = array_filter($lines);
-  if(count($visibleLines) > $maxLines) {
-    $newContent = array();
-    $visibleLinesAdded = 0;
-    $i = 0;
-    while($visibleLinesAdded < $maxLines && $i < count($lines)) {
-      $line = $lines[$i];
-      $newContent[] = $line;
-      if(trim($line) != '')
-        $visibleLinesAdded++;
-      $i++;
+    private function truncate($text, $maxTextLength, $maxLines) {
+      $lines = explode("\n", $text);
+      $visibleLines = array_filter($lines);
+      if(count($visibleLines) > $maxLines) {
+        $newContent = array();
+        $visibleLinesAdded = 0;
+        $i = 0;
+        while($visibleLinesAdded < $maxLines && $i < count($lines)) {
+          $line = $lines[$i];
+          $newContent[] = $line;
+          if(trim($line) != '')
+            $visibleLinesAdded++;
+          $i++;
+        }
+        $text = implode("\n", $newContent);
+        // Tack on extra chars and then tell cassis to ellipsize it shorter to take advantage of proper ellipsizing logic.
+        // This is for when the full text is shorter than $maxTextLength but has more lines than $maxLines
+        $text .= ' ....';
+      }
+      return $text;
     }
-    $text = implode("\n", $newContent);
-    // Tack on extra chars and then tell cassis to ellipsize it shorter to take advantage of proper ellipsizing logic.
-    // This is for when the full text is shorter than $maxTextLength but has more lines than $maxLines
-    $text .= ' ....';
-  }
-  return $text;
-}
 
-// Collects all URLs found in the input array, and remove the scheme.
-// An input object may be a string URL or also an mf2 object with properties.url
-private function collectURLs(&$urls) {
-  if(is_array($urls) && array_key_exists(0, $urls)) {
-    foreach($urls as $i=>$u) {
-      $this->collectURLs($urls[$i]);
-    }
-  } elseif(is_array($urls)
-    && array_key_exists('type', $urls)
-    && array_key_exists('properties', $urls)
-    && array_key_exists('url', $urls['properties'])
-    ) {
-    // Flatten the object and turn it just into the URL
-    $urls = preg_replace('/^https?/', '', $urls['properties']['url'][0]);
-  } elseif(is_string($urls)) {
-    $urls = preg_replace('/^https?/', '', $urls);
-  }
-}
-
-private function parse($mf, $refURL=false, $maxTextLength=150, $maxLines=2) {
-  // When parsing a comment, the $refURL is the URL being commented on.
-  // This is used to check for an explicit in-reply-to property set to this URL.
-
-  // Remove the scheme from the refURL and treat http and https links as the same
-  $this->collectURLs($refURL);
-
-  $type = 'mention';
-  $published = false;
-  $name = false;
-  $text = false;
-  $url = false;
-  $author = array(
-    'name' => false,
-    'photo' => false,
-    'url' => false
-  );
-  $comments = array();
-  $rsvp = null;
-  $tags = null;
-  $syndications = null;
-
-  if(array_key_exists('type', $mf) && (in_array('h-entry', $mf['type']) || in_array('h-cite', $mf['type'])) && array_key_exists('properties', $mf)) {
-    $properties = $mf['properties'];
-
-    if(array_key_exists('author', $properties)) {
-      $authorProperty = $properties['author'][0];
-      if(is_array($authorProperty)) {
-
-        if(array_key_exists('name', $authorProperty['properties'])) {
-          $author['name'] = $authorProperty['properties']['name'][0];
+    // Collects all URLs found in the input array, and remove the scheme.
+    // An input object may be a string URL or also an mf2 object with properties.url
+    private function collectURLs(&$urls) {
+      if(is_array($urls) && array_key_exists(0, $urls)) {
+        foreach($urls as $i=>$u) {
+          $this->collectURLs($urls[$i]);
         }
-
-        if(array_key_exists('url', $authorProperty['properties'])) {
-          $author['url'] = $authorProperty['properties']['url'][0];
-        }
-
-        if(array_key_exists('photo', $authorProperty['properties'])) {
-          $author['photo'] = $authorProperty['properties']['photo'][0];
-        }
-
-      } elseif(is_string($authorProperty)) {
-        $author['url'] = $authorProperty;
+      } elseif(is_array($urls)
+        && array_key_exists('type', $urls)
+        && array_key_exists('properties', $urls)
+        && array_key_exists('url', $urls['properties'])
+        ) {
+        // Flatten the object and turn it just into the URL
+        $urls = preg_replace('/^https?/', '', $urls['properties']['url'][0]);
+      } elseif(is_string($urls)) {
+        $urls = preg_replace('/^https?/', '', $urls);
       }
     }
 
-    if(array_key_exists('published', $properties)) {
-      $published = $properties['published'][0];
-    }
+    private function parse($mf, $refURL=false, $maxTextLength=150, $maxLines=2) {
+      // When parsing a comment, the $refURL is the URL being commented on.
+      // This is used to check for an explicit in-reply-to property set to this URL.
 
-    if(array_key_exists('url', $properties)) {
-      $url = $properties['url'][0];
-    }
+      // Remove the scheme from the refURL and treat http and https links as the same
+      $this->collectURLs($refURL);
 
-    if(array_key_exists('comment', $properties)) {
-      foreach($properties['comment'] as $comment) {
-        $comments[] = parse($comment, $url, $maxTextLength, $maxLines); // recurse for all comments
-      }
-    }
+      $type = 'mention';
+      $published = false;
+      $name = false;
+      $text = false;
+      $url = false;
+      $author = array(
+        'name' => false,
+        'photo' => false,
+        'url' => false
+      );
+      $comments = array();
+      $rsvp = null;
+      $tags = null;
+      $syndications = null;
 
-    if(array_key_exists('syndication', $properties)) {
-      $syndications = array();
-      foreach($properties['syndication'] as $syndication_link){
-        $syndications[] = $syndication_link;
-      }
-    }
+      if(array_key_exists('type', $mf) && (in_array('h-entry', $mf['type']) || in_array('h-cite', $mf['type'])) && array_key_exists('properties', $mf)) {
+        $properties = $mf['properties'];
 
-    // Check if this post is a "like-of"
-    if($refURL && array_key_exists('like-of', $properties)) {
-      collectURLs($properties['like-of']);
-      if(in_array($refURL, $properties['like-of']))
-        $type = 'like';
-    }
+        if(array_key_exists('author', $properties)) {
+          $authorProperty = $properties['author'][0];
+          if(is_array($authorProperty)) {
 
-    // Check if this post is a "like" (Should be deprecated in the future)
-    if($refURL && array_key_exists('like', $properties)) {
-      collectURLs($properties['like']);
-      if(in_array($refURL, $properties['like']))
-        $type = 'like';
-    }
+            if(array_key_exists('name', $authorProperty['properties'])) {
+              $author['name'] = $authorProperty['properties']['name'][0];
+            }
 
-    // If the post has an explicit in-reply-to property, verify it matches $refURL and set the type to "reply"
-    if($refURL && array_key_exists('in-reply-to', $properties)) {
-      // in-reply-to may be a string or an h-cite
-      foreach($properties['in-reply-to'] as $check) {
-        $this->collectURLs($check);
-        if(is_string($check) && $check == $refURL) {
-          $type = 'reply';
-          continue;
-        } elseif(is_array($check)) {
-          if(array_key_exists('type', $check) && in_array('h-cite', $check['type'])) {
-            if(array_key_exists('properties', $check) && array_key_exists('url', $check['properties'])) {
-              if(in_array($refURL, $check['properties']['url'])) {
-                $type = 'reply';
+            if(array_key_exists('url', $authorProperty['properties'])) {
+              $author['url'] = $authorProperty['properties']['url'][0];
+            }
+
+            if(array_key_exists('photo', $authorProperty['properties'])) {
+              $author['photo'] = $authorProperty['properties']['photo'][0];
+            }
+
+          } elseif(is_string($authorProperty)) {
+            $author['url'] = $authorProperty;
+          }
+        }
+
+        if(array_key_exists('published', $properties)) {
+          $published = $properties['published'][0];
+        }
+
+        if(array_key_exists('url', $properties)) {
+          $url = $properties['url'][0];
+        }
+
+        if(array_key_exists('comment', $properties)) {
+          foreach($properties['comment'] as $comment) {
+            $comments[] = parse($comment, $url, $maxTextLength, $maxLines); // recurse for all comments
+          }
+        }
+
+        if(array_key_exists('syndication', $properties)) {
+          $syndications = array();
+          foreach($properties['syndication'] as $syndication_link){
+            $syndications[] = $syndication_link;
+          }
+        }
+
+        // Check if this post is a "like-of"
+        if($refURL && array_key_exists('like-of', $properties)) {
+          $this->collectURLs($properties['like-of']);
+          if(in_array($refURL, $properties['like-of']))
+            $type = 'like';
+        }
+
+        // Check if this post is a "like" (Should be deprecated in the future)
+        if($refURL && array_key_exists('like', $properties)) {
+          $this->collectURLs($properties['like']);
+          if(in_array($refURL, $properties['like']))
+            $type = 'like';
+        }
+
+        // If the post has an explicit in-reply-to property, verify it matches $refURL and set the type to "reply"
+        if($refURL && array_key_exists('in-reply-to', $properties)) {
+          // in-reply-to may be a string or an h-cite
+          foreach($properties['in-reply-to'] as $check) {
+            $this->collectURLs($check);
+            if(is_string($check) && $check == $refURL) {
+              $type = 'reply';
+              continue;
+            } elseif(is_array($check)) {
+              if(array_key_exists('type', $check) && in_array('h-cite', $check['type'])) {
+                if(array_key_exists('properties', $check) && array_key_exists('url', $check['properties'])) {
+                  if(in_array($refURL, $check['properties']['url'])) {
+                    $type = 'reply';
+                  }
+                }
               }
             }
           }
         }
-      }
-    }
-    // If the post has an explicit tag-of property, verify it matches $refURL and set the type to "tag"
-    if($refURL && array_key_exists('tag-of', $properties)) {
-      // tag-of may be a string or an h-cite
-      foreach($properties['tag-of'] as $check) {
-        removeScheme($check);
-        if(is_string($check) && $check == $refURL) {
-          $type = 'tag';
-          continue;
-        } elseif(is_array($check)) {
-          if(array_key_exists('type', $check) && in_array('h-cite', $check['type'])) {
-            if(array_key_exists('properties', $check) && array_key_exists('url', $check['properties'])) {
-              if(in_array($refURL, $check['properties']['url'])) {
-                $type = 'tag';
+        // If the post has an explicit tag-of property, verify it matches $refURL and set the type to "tag"
+        if($refURL && array_key_exists('tag-of', $properties)) {
+          // tag-of may be a string or an h-cite
+          foreach($properties['tag-of'] as $check) {
+            removeScheme($check);
+            if(is_string($check) && $check == $refURL) {
+              $type = 'tag';
+              continue;
+            } elseif(is_array($check)) {
+              if(array_key_exists('type', $check) && in_array('h-cite', $check['type'])) {
+                if(array_key_exists('properties', $check) && array_key_exists('url', $check['properties'])) {
+                  if(in_array($refURL, $check['properties']['url'])) {
+                    $type = 'tag';
+                  }
+                }
               }
             }
           }
-        }
-      }
-      //this could be something you are actually tagged in
-      if($type != 'tag'){
-          foreach($properties['category'] as $check){
-                     if(isset($check['type']) && in_array('h-card', $check['type'])) {
-                         if(array_key_exists('properties', $check) && array_key_exists('url', $check['properties'])){ 
-                             
-                             foreach( $check['properties']['url'] as $test_url){
-                                 removeScheme($test_url); 
-                                 if(is_string($test_url) && $test_url == $refURL) {
-                                      $type = 'tagged';
-                                      continue;
+          //this could be something you are actually tagged in
+          if($type != 'tag'){
+              foreach($properties['category'] as $check){
+                         if(isset($check['type']) && in_array('h-card', $check['type'])) {
+                             if(array_key_exists('properties', $check) && array_key_exists('url', $check['properties'])){ 
+                                 
+                                 foreach( $check['properties']['url'] as $test_url){
+                                     removeScheme($test_url); 
+                                     if(is_string($test_url) && $test_url == $refURL) {
+                                          $type = 'tagged';
+                                          continue;
+                                     }
                                  }
-                             }
 
-                          }
-                     }
-              if(is_array($cat)){
-                  foreach($cat as $check){
+                              }
+                         }
+                  if(is_array($cat)){
+                      foreach($cat as $check){
+                      }
                   }
               }
-          }
 
-      }
-    }
-    if($type=='tag'){
-        $tags = array();
-        foreach($properties['category'] as $check) {
-            if(is_string($check)){
-                $tag=array('category' => $check);
-            } elseif(is_array($check)){
-                $tag=array();
-                if(array_key_exists('value', $check) && is_string($check['value'])) {
-                    $tag['name'] = $check['value'];
-                }
-                if(array_key_exists('properties', $check) && is_array($check['properties'])){
-                    if(array_key_exists('name', $check['properties'])){
-                        if(is_string($check['properties']['name'])) {
-                            $tag['name'] = $check['properties']['name'];
-                        } elseif (is_array($check['properties']['name']) && is_string($check['properties']['name'][0])) {
-                            $tag['name'] = $check['properties']['name'][0];
+          }
+        }
+        if($type=='tag'){
+            $tags = array();
+            foreach($properties['category'] as $check) {
+                if(is_string($check)){
+                    $tag=array('category' => $check);
+                } elseif(is_array($check)){
+                    $tag=array();
+                    if(array_key_exists('value', $check) && is_string($check['value'])) {
+                        $tag['name'] = $check['value'];
+                    }
+                    if(array_key_exists('properties', $check) && is_array($check['properties'])){
+                        if(array_key_exists('name', $check['properties'])){
+                            if(is_string($check['properties']['name'])) {
+                                $tag['name'] = $check['properties']['name'];
+                            } elseif (is_array($check['properties']['name']) && is_string($check['properties']['name'][0])) {
+                                $tag['name'] = $check['properties']['name'][0];
+                            }
+                        }
+                        if(array_key_exists('url', $check['properties'])){
+                            if(is_string($check['properties']['url'])) {
+                                $tag['url'] = $check['properties']['url'];
+                            } elseif (is_array($check['properties']['url']) && is_string($check['properties']['url'][0])) {
+                                $tag['url'] = $check['properties']['url'][0];
+                            }
                         }
                     }
-                    if(array_key_exists('url', $check['properties'])){
-                        if(is_string($check['properties']['url'])) {
-                            $tag['url'] = $check['properties']['url'];
-                        } elseif (is_array($check['properties']['url']) && is_string($check['properties']['url'][0])) {
-                            $tag['url'] = $check['properties']['url'][0];
-                        }
+                    if(array_key_exists('shape', $check) && is_string($check['shape'])) {
+                        $tag['shape'] = $check['shape'];
+                    }
+                    if(array_key_exists('coords', $check) && is_string($check['coords'])) {
+                        $tag['coords'] = $check['coords'];
                     }
                 }
-                if(array_key_exists('shape', $check) && is_string($check['shape'])) {
-                    $tag['shape'] = $check['shape'];
-                }
-                if(array_key_exists('coords', $check) && is_string($check['coords'])) {
-                    $tag['coords'] = $check['coords'];
-                }
+                $tags[] = $tag;
             }
-            $tags[] = $tag;
-        }
-    }
-
-    // Check if the reply is an RSVP
-    if(array_key_exists('rsvp', $properties)) {
-      $rsvp = $properties['rsvp'][0];
-      $type = 'rsvp';
-    }
-
-    // Check if the reply is an invitation
-    if(array_key_exists('invitee', $properties)) {
-      $inviteeProperty = $properties['invitee'][0];
-      if(is_array($inviteeProperty)) {
-
-        if(array_key_exists('name', $inviteeProperty['properties'])) {
-          $invitee['name'] = $inviteeProperty['properties']['name'][0];
         }
 
-        if(array_key_exists('url', $inviteeProperty['properties'])) {
-          $invitee['url'] = $inviteeProperty['properties']['url'][0];
+        // Check if the reply is an RSVP
+        if(array_key_exists('rsvp', $properties)) {
+          $rsvp = $properties['rsvp'][0];
+          $type = 'rsvp';
         }
 
-        if(array_key_exists('photo', $inviteeProperty['properties'])) {
-          $invitee['photo'] = $inviteeProperty['properties']['photo'][0];
+        // Check if the reply is an invitation
+        if(array_key_exists('invitee', $properties)) {
+          $inviteeProperty = $properties['invitee'][0];
+          if(is_array($inviteeProperty)) {
+
+            if(array_key_exists('name', $inviteeProperty['properties'])) {
+              $invitee['name'] = $inviteeProperty['properties']['name'][0];
+            }
+
+            if(array_key_exists('url', $inviteeProperty['properties'])) {
+              $invitee['url'] = $inviteeProperty['properties']['url'][0];
+            }
+
+            if(array_key_exists('photo', $inviteeProperty['properties'])) {
+              $invitee['photo'] = $inviteeProperty['properties']['photo'][0];
+            }
+
+          } elseif(is_string($inviteeProperty)) {
+            $invitee['url'] = $inviteeProperty;
+          }
+          $type = 'invite';
         }
 
-      } elseif(is_string($inviteeProperty)) {
-        $invitee['url'] = $inviteeProperty;
-      }
-      $type = 'invite';
-    }
-
-    // Check if this post is a "repost"
-    if($refURL && array_key_exists('repost-of', $properties)) {
-      $this->collectURLs($properties['repost-of']);
-      if(in_array($refURL, $properties['repost-of']))
-        $type = 'repost';
-    }
-
-    // Also check for "u-repost" since some people are sending that. Probably "u-repost-of" will win out.
-    if($refURL && array_key_exists('repost', $properties)) {
-      $this->collectURLs($properties['repost']);
-      if(in_array($refURL, $properties['repost']))
-        $type = 'repost';
-    }
-
-    // Check if this post is a "bookmark-of"
-    if($refURL && array_key_exists('bookmark-of', $properties)) {
-      $this->collectURLs($properties['bookmark-of']);
-      if(in_array($refURL, $properties['bookmark-of']))
-        $type = 'bookmark';
-    }
-
-    // From http://indiewebcamp.com/comments-presentation#How_to_display
-
-    // If the entry has an e-content, and if the content is not too long, use that
-    if(array_key_exists('content', $properties)) {
-      $content = $properties['content'][0];
-      if ((is_array($content) && array_key_exists('value', $content)) || is_string($content)) {
-        if (is_array($content)) {
-          $content = $content['value'];
+        // Check if this post is a "repost"
+        if($refURL && array_key_exists('repost-of', $properties)) {
+          $this->collectURLs($properties['repost-of']);
+          if(in_array($refURL, $properties['repost-of']))
+            $type = 'repost';
         }
 
-        $visibleLines = array_filter(explode("\n", $content));
-        if(strlen($content) <= $maxTextLength && count($visibleLines) <= $maxLines) {
-          $text = $content;
+        // Also check for "u-repost" since some people are sending that. Probably "u-repost-of" will win out.
+        if($refURL && array_key_exists('repost', $properties)) {
+          $this->collectURLs($properties['repost']);
+          if(in_array($refURL, $properties['repost']))
+            $type = 'repost';
         }
-      }
-      // If the content is not a string or array with “value”, something is wrong.
-    }
 
-    // If there is no e-content, or if it is too long
-    if($text == false) {
-      // if the h-entry has a p-summary, and the text is not too long, use that
-      if(array_key_exists('summary', $properties)) {
-        $summary = $properties['summary'][0];
-        if(is_array($summary) && array_key_exists('value', $summary))
-          $summary = $summary['value'];
-
-        if(strlen($summary) <= $maxTextLength) {
-          $text = $summary;
-        } else {
-          // if the p-summary is too long, then truncate the p-summary
-          $text = $this->truncate($summary, $maxTextLength, $maxLines);
+        // Check if this post is a "bookmark-of"
+        if($refURL && array_key_exists('bookmark-of', $properties)) {
+          $this->collectURLs($properties['bookmark-of']);
+          if(in_array($refURL, $properties['bookmark-of']))
+            $type = 'bookmark';
         }
-      } else {
-        // if no p-summary, but there is an e-content, use a truncated e-content
+
+        // From http://indiewebcamp.com/comments-presentation#How_to_display
+
+        // If the entry has an e-content, and if the content is not too long, use that
         if(array_key_exists('content', $properties)) {
-          // $content already exists from line 127, and is guaranteed to be a string.
-          $text = $this->truncate($content, $maxTextLength, $maxLines);
+          $content = $properties['content'][0];
+          if ((is_array($content) && array_key_exists('value', $content)) || is_string($content)) {
+            if (is_array($content)) {
+              $content = $content['value'];
+            }
+
+            $visibleLines = array_filter(explode("\n", $content));
+            if(strlen($content) <= $maxTextLength && count($visibleLines) <= $maxLines) {
+              $text = $content;
+            }
+          }
+          // If the content is not a string or array with “value”, something is wrong.
         }
-      }
-    }
 
-    // If there is no e-content and no p-summary
-    if($text == false) {
-      // If there is a p-name, and it's not too long, use that
-      if(array_key_exists('name', $properties)) {
-        $pname = $properties['name'][0];
-        if(strlen($pname) <= $maxTextLength) {
-          $text = $pname;
-        } else {
-          // if the p-name is too long, truncate it
-          $text = $this->truncate($pname, $maxTextLength, $maxLines);
-        }
-      }
-    }
+        // If there is no e-content, or if it is too long
+        if($text == false) {
+          // if the h-entry has a p-summary, and the text is not too long, use that
+          if(array_key_exists('summary', $properties)) {
+            $summary = $properties['summary'][0];
+            if(is_array($summary) && array_key_exists('value', $summary))
+              $summary = $summary['value'];
 
-    // Now see if the "name" property of the h-entry is unique or part of the content
-    if(array_key_exists('name', $properties)) {
-      $nameSanitized = strtolower(strip_tags($properties['name'][0]));
-      $nameSanitized = preg_replace('/ ?\.+$/', '', $nameSanitized); // Remove trailing ellipses
-      // Using the already truncated version of the content here. But the "name" would not have been truncated so may be longer than the content.
-      $contentSanitized = strtolower(strip_tags($text));
-      $contentSanitized = preg_replace('/ ?\.+$/', '', $contentSanitized); // Remove trailing ellipses
-
-      // If this is a "mention" instead of a "reply", and if there is no "content" property,
-      // then we actually want to use the "name" property as the name and leave "text" blank.
-      if(($type == 'mention' || $type == 'tagged') && !array_key_exists('content', $properties)) {
-        $name = $this->truncate($properties['name'][0], $maxTextLength, $maxLines);
-        $text = false;
-      } else {
-        if($nameSanitized != $contentSanitized and $nameSanitized !== '') {
-          // If the name is the beginning of the content, we don't care
-          // Same if the content is the beginning of the name (like with really long notes)
-          if($contentSanitized === '' 
-            || (!(strpos($contentSanitized, $nameSanitized) === 0) && !(strpos($nameSanitized, $contentSanitized) === 0))
-            ) {
-            // The name was determined to be different from the content, so return it
-            $name = $properties['name'][0]; //truncate($properties['name'][0], $maxTextLength, $maxLines);
+            if(strlen($summary) <= $maxTextLength) {
+              $text = $summary;
+            } else {
+              // if the p-summary is too long, then truncate the p-summary
+              $text = $this->truncate($summary, $maxTextLength, $maxLines);
+            }
+          } else {
+            // if no p-summary, but there is an e-content, use a truncated e-content
+            if(array_key_exists('content', $properties)) {
+              // $content already exists from line 127, and is guaranteed to be a string.
+              $text = $this->truncate($content, $maxTextLength, $maxLines);
+            }
           }
         }
+
+        // If there is no e-content and no p-summary
+        if($text == false) {
+          // If there is a p-name, and it's not too long, use that
+          if(array_key_exists('name', $properties)) {
+            $pname = $properties['name'][0];
+            if(strlen($pname) <= $maxTextLength) {
+              $text = $pname;
+            } else {
+              // if the p-name is too long, truncate it
+              $text = $this->truncate($pname, $maxTextLength, $maxLines);
+            }
+          }
+        }
+
+        // Now see if the "name" property of the h-entry is unique or part of the content
+        if(array_key_exists('name', $properties)) {
+          $nameSanitized = strtolower(strip_tags($properties['name'][0]));
+          $nameSanitized = preg_replace('/ ?\.+$/', '', $nameSanitized); // Remove trailing ellipses
+          // Using the already truncated version of the content here. But the "name" would not have been truncated so may be longer than the content.
+          $contentSanitized = strtolower(strip_tags($text));
+          $contentSanitized = preg_replace('/ ?\.+$/', '', $contentSanitized); // Remove trailing ellipses
+
+          // If this is a "mention" instead of a "reply", and if there is no "content" property,
+          // then we actually want to use the "name" property as the name and leave "text" blank.
+          if(($type == 'mention' || $type == 'tagged') && !array_key_exists('content', $properties)) {
+            $name = $this->truncate($properties['name'][0], $maxTextLength, $maxLines);
+            $text = false;
+          } else {
+            if($nameSanitized != $contentSanitized and $nameSanitized !== '') {
+              // If the name is the beginning of the content, we don't care
+              // Same if the content is the beginning of the name (like with really long notes)
+              if($contentSanitized === '' 
+                || (!(strpos($contentSanitized, $nameSanitized) === 0) && !(strpos($nameSanitized, $contentSanitized) === 0))
+                ) {
+                // The name was determined to be different from the content, so return it
+                $name = $properties['name'][0]; //truncate($properties['name'][0], $maxTextLength, $maxLines);
+              }
+            }
+          }
+        }
+
       }
+
+      $result = array(
+        'author' => $author,
+        'published' => $published,
+        'name' => $name,
+        'text' => $text,
+        'url' => $url,
+        'type' => $type
+      );
+
+      if(!empty($syndications)){
+        $result['syndications'] = $syndications;
+      }
+      if($type == 'invite')
+        $result['invitee'] = $invitee;
+
+      if($rsvp !== null) {
+        $result['rsvp'] = $rsvp;
+      }
+      if(!empty($comments)) {
+        $result['comments'] = $comments;
+      }
+
+      if($tags !== null) {
+        $result['tags'] = $tags;
+      }
+
+      return $result;
     }
-
-  }
-
-  $result = array(
-    'author' => $author,
-    'published' => $published,
-    'name' => $name,
-    'text' => $text,
-    'url' => $url,
-    'type' => $type
-  );
-
-  if(!empty($syndications)){
-    $result['syndications'] = $syndications;
-  }
-  if($type == 'invite')
-    $result['invitee'] = $invitee;
-
-  if($rsvp !== null) {
-    $result['rsvp'] = $rsvp;
-  }
-  if(!empty($comments)) {
-    $result['comments'] = $comments;
-  }
-
-  if($tags !== null) {
-    $result['tags'] = $tags;
-  }
-
-  return $result;
-}
 }

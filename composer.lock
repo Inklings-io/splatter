@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "2efa14a51391761f1360fe58148e063c",
+    "content-hash": "d2f61be54d9cdd1617f2786bcf0c8d38",
     "packages": [
         {
             "name": "barnabywalters/mf-cleaner",
@@ -80,6 +80,39 @@
             ],
             "description": "The iconic font designed for use with Twitter Bootstrap.",
             "time": "2016-10-25T10:56:23+00:00"
+        },
+        {
+            "name": "dissolve/single-emoji-recognizer",
+            "version": "1.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/dissolve/single-emoji-recognizer.git",
+                "reference": "aef5f2eb85c83ba204d788aa5357bf13c1b9e5a0"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/dissolve/single-emoji-recognizer/zipball/aef5f2eb85c83ba204d788aa5357bf13c1b9e5a0",
+                "reference": "aef5f2eb85c83ba204d788aa5357bf13c1b9e5a0",
+                "shasum": ""
+            },
+            "type": "library",
+            "autoload": {
+                "files": [
+                    "src/emoji.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "CC0-1.0"
+            ],
+            "authors": [
+                {
+                    "name": "Ben Roberts",
+                    "homepage": "https://ben.thatmustbe.me/"
+                }
+            ],
+            "description": "Determine if a string is a 'Single' Emoji",
+            "time": "2016-05-30T05:12:40+00:00"
         },
         {
             "name": "dnoegel/php-xdg-base-dir",
