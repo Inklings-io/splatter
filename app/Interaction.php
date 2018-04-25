@@ -24,6 +24,7 @@ class Interaction extends Model
     {
         return $this->belongsToMany('App\Interaction', 'interaction_interaction', 'parent_id',  'child_id' );
     }
+
     public function getCommentsAttribute()
     {
         return $this->interactions()->where(['type' => 'reply'])->get();
@@ -32,5 +33,10 @@ class Interaction extends Model
     public function webmention()
     {
         return $this->belongsTo('App\Webmention');
+    }
+
+    public function syndications()
+    {
+        return $this->hasMany('App\InteractionSyndication');
     }
 }

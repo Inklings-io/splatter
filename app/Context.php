@@ -16,4 +16,9 @@ class Context extends Model
     {
         return $this->belongsToMany('App\Context', 'context_context', 'child_id',  'parent_id' );
     }
+
+    public function syndications()
+    {
+        return $this->hasMany('App\ContextSyndication');
+    }
 }

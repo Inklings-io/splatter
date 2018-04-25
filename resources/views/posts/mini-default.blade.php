@@ -134,7 +134,7 @@
     @endif
 
                  
-    @if(!empty($post->reacjis) )
+    @if( $post->reacjis->count() > 0)
       <span id="general-reacjis">
         @foreach($post->reacjis as $content=> $reacji)
           <span class="reacji-container">
